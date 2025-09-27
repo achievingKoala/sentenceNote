@@ -1,71 +1,67 @@
-<script setup>
-import ChatPage from './components/ChatPage.vue'
-</script>
-
 <template>
-  <ChatPage />
+  <div class="app">
+    <div class="sidebar">
+      <div class="menu-item active" @click="currentView = 'AddPage'">
+        添加页面
+      </div>
+    </div>
+    <div class="main-content">
+      <AddPage v-if="currentView === 'AddPage'" />
+    </div>
+  </div>
 </template>
 
-<style scoped>
-header {
-  line-height: 1.5;
-  max-height: 100vh;
-}
+<script>
+import AddPage from './views/AddPage.vue'
 
-.logo {
-  display: block;
-  margin: 0 auto 2rem;
-}
-
-nav {
-  width: 100%;
-  font-size: 12px;
-  text-align: center;
-  margin-top: 2rem;
-}
-
-nav a.router-link-exact-active {
-  color: var(--color-text);
-}
-
-nav a.router-link-exact-active:hover {
-  background-color: transparent;
-}
-
-nav a {
-  display: inline-block;
-  padding: 0 1rem;
-  border-left: 1px solid var(--color-border);
-}
-
-nav a:first-of-type {
-  border: 0;
-}
-
-@media (min-width: 1024px) {
-  header {
-    display: flex;
-    place-items: center;
-    padding-right: calc(var(--section-gap) / 2);
+export default {
+  name: 'App',
+  components: {
+    AddPage
+  },
+  data() {
+    return {
+      currentView: 'AddPage'
+    }
   }
+}
+</script>
 
-  .logo {
-    margin: 0 2rem 0 0;
-  }
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
 
-  header .wrapper {
-    display: flex;
-    place-items: flex-start;
-    flex-wrap: wrap;
-  }
+.app {
+  display: flex;
+  height: 100vh;
+}
 
-  nav {
-    text-align: left;
-    margin-left: -1rem;
-    font-size: 1rem;
+.sidebar {
+  width: 200px;
+  background: #f5f5f5;
+  border-right: 1px solid #ddd;
+  padding: 20px 0;
+}
 
-    padding: 1rem 0;
-    margin-top: 1rem;
-  }
+.menu-item {
+  padding: 12px 20px;
+  cursor: pointer;
+  border-bottom: 1px solid #eee;
+}
+
+.menu-item:hover {
+  background: #e9e9e9;
+}
+
+.menu-item.active {
+  background: #007bff;
+  color: white;
+}
+
+.main-content {
+  flex: 1;
 }
 </style>
