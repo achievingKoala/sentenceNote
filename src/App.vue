@@ -1,8 +1,18 @@
 <template>
   <div class="app">
     <div class="sidebar">
-      <div class="menu-item active" @click="currentView = 'AddPage'">
+      <div class="menu-item" :class="{ active: currentView === 'AddPage' }" @click="currentView = 'AddPage'">
         添加页面
+      </div>
+      <div 
+        v-for="notebook in notebooks" 
+        :key="notebook.id" 
+        class="menu-item" 
+        :class="{ active: currentView === `notebook-${notebook.id}` }"
+        @click="currentView = `notebook-${notebook.id}`"
+      >
+        <div class="notebook-title">{{ notebook.name_zh }}</div>
+        <div class="notebook-subtitle">{{ notebook.name }}</div>
       </div>
     </div>
     <div class="main-content">
@@ -21,7 +31,21 @@ export default {
   },
   data() {
     return {
-      currentView: 'AddPage'
+      currentView: 'AddPage',
+      notebooks: []
+    }
+  },
+  async mounted() {
+    await this.fetchNotebooks()
+  },
+  methods: {
+    async fetchNotebooks() {
+      try {
+        const response = await fetch('http://localhost:5678/webhook/notebooks')
+        this.notebooks = await response.json()
+      } catch (error) {
+        console.error('获取笔记本列表失败:', error)
+      }
     }
   }
 }
@@ -59,6 +83,16 @@ export default {
 .menu-item.active {
   background: #007bff;
   color: white;
+}
+
+.notebook-title {
+  font-weight: bold;
+  margin-bottom: 4px;
+}
+
+.notebook-subtitle {
+  font-size: 12px;
+  opacity: 0.8;
 }
 
 .main-content {
