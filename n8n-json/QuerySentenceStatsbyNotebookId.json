@@ -1,0 +1,115 @@
+{
+  "name": "QuerySentenceStatsbyNotebookId",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "sentenceStatsByNotebookId",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -448,
+        -96
+      ],
+      "id": "eb76a17c-d2d0-43c7-97b4-f77bf7ec78b3",
+      "name": "Webhook",
+      "webhookId": "cb1dd4a8-d6ea-4337-a84f-1c8d2e9c9130"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json.data }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        224,
+        -96
+      ],
+      "id": "7b6ff666-45a0-4f56-9980-0b7a8b3bc2d5",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT \n  s.*,\n  COALESCE(sc.usage_count, 0) as usage_count,\n  CASE WHEN sl.id IS NOT NULL THEN true ELSE false END as is_liked\nFROM sentences s\nLEFT JOIN sentence_counts sc ON s.id = sc.sentence_id AND sc.user_id = 1\nLEFT JOIN sentence_likes sl ON s.id = sl.sentence_id AND sl.user_id = 1\nWHERE s.notebook_id = {{ $json.query.notebookId }}\nORDER BY s.id",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -224,
+        -96
+      ],
+      "id": "d6bf5006-1428-4a71-9ea6-028c78e103c9",
+      "name": "Query sentence stats",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "1IelyHRtO1kOE0Tf",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        0,
+        -96
+      ],
+      "id": "85641456-27a1-43d0-9b2d-595d9d9143a9",
+      "name": "Aggregate"
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Query sentence stats",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Query sentence stats": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "tags": []
+}
