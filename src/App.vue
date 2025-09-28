@@ -9,7 +9,7 @@
         :key="notebook.id" 
         class="menu-item" 
         :class="{ active: currentView === `notebook-${notebook.id}` }"
-        @click="currentView = `notebook-${notebook.id}`"
+        @click="selectNotebook(notebook.id)"
       >
         <div class="notebook-title">{{ notebook.name_zh }}</div>
         <div class="notebook-subtitle">{{ notebook.name }}</div>
@@ -45,6 +45,16 @@ export default {
         this.notebooks = await response.json()
       } catch (error) {
         console.error('获取笔记本列表失败:', error)
+      }
+    },
+    async selectNotebook(notebookId) {
+      this.currentView = `notebook-${notebookId}`
+      try {
+        const response = await fetch(`http://localhost:5678/webhook/allSentencesByNoteBookId?notebookId=${notebookId}`)
+        const sentences = await response.json()
+        console.log('句子数据:', sentences)
+      } catch (error) {
+        console.error('获取句子失败:', error)
       }
     }
   }
