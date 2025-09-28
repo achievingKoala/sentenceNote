@@ -1,5 +1,10 @@
 <template>
   <div class="sentence-view">
+    <div class="control-bar">
+      <button class="btn random-btn" @click="shuffleSentences">
+        随机展示
+      </button>
+    </div>
     <div class="sentence-card" v-for="sentence in sentences" :key="sentence.id">
       <div class="sentence-header">
         <div class="sentence-text" v-show="sentence.showEnglish">{{ sentence.text }}</div>
@@ -193,6 +198,13 @@ export default {
     
     toggleEnglish(sentence) {
       sentence.showEnglish = !sentence.showEnglish;
+    },
+    
+    shuffleSentences() {
+      for (let i = this.sentences.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [this.sentences[i], this.sentences[j]] = [this.sentences[j], this.sentences[i]];
+      }
     }
   }
 }
@@ -203,6 +215,20 @@ export default {
   padding: 20px;
   max-width: 800px;
   margin: 0 auto;
+}
+
+.control-bar {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.random-btn {
+  background: #6f42c1;
+}
+
+.random-btn:hover {
+  background-color: #5a32a3;
 }
 
 .sentence-card {
