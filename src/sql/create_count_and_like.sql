@@ -1,5 +1,6 @@
 -- 计数表：一行对应一条句子
 CREATE TABLE public.sentence_counts (
+  id          bigserial PRIMARY KEY,
   sentence_id  integer PRIMARY KEY
     REFERENCES public.sentences(id) ON DELETE CASCADE,
   usage_count  integer  NOT NULL DEFAULT 0,
@@ -9,7 +10,7 @@ CREATE TABLE public.sentence_counts (
 
 
 -- 收藏表：单用户阶段用 user_id IS NULL；未来引入 user_id 后照用
-CREATE TABLE public.sentence_favorites (
+CREATE TABLE public.sentence_likes (
   id          bigserial PRIMARY KEY,
   sentence_id integer NOT NULL
     REFERENCES public.sentences(id) ON DELETE CASCADE,
