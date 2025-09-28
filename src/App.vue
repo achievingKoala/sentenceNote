@@ -17,22 +17,26 @@
     </div>
     <div class="main-content">
       <AddPage v-if="currentView === 'AddPage'" />
+      <SentenceView v-else :sentences="currentSentences" />
     </div>
   </div>
 </template>
 
 <script>
 import AddPage from './views/AddPage.vue'
+import SentenceView from './views/SentenceView.vue'
 
 export default {
   name: 'App',
   components: {
-    AddPage
+    AddPage,
+    SentenceView
   },
   data() {
     return {
       currentView: 'AddPage',
-      notebooks: []
+      notebooks: [],
+      currentSentences: []
     }
   },
   async mounted() {
@@ -51,10 +55,10 @@ export default {
       this.currentView = `notebook-${notebookId}`
       try {
         const response = await fetch(`http://localhost:5678/webhook/allSentencesByNoteBookId?notebookId=${notebookId}`)
-        const sentences = await response.json()
-        console.log('句子数据:', sentences)
+        this.currentSentences = await response.json()
       } catch (error) {
         console.error('获取句子失败:', error)
+        this.currentSentences = []
       }
     }
   }
