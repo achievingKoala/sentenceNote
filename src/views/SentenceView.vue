@@ -2,7 +2,7 @@
   <div class="sentence-view">
     <div class="sentence-card" v-for="sentence in sentences" :key="sentence.id">
       <div class="sentence-header">
-        <div class="sentence-text">{{ sentence.text }}</div>
+        <div class="sentence-text" v-show="sentence.showEnglish">{{ sentence.text }}</div>
       </div>
       <div class="sentence-text-zh">{{ sentence.text_zh }}</div>
       <div 
@@ -21,6 +21,13 @@
           title="发声 (快捷键: \\)"
         >
           {{ isSpeaking ? '播放中...' : '发声 (\\)' }}
+        </button>
+        <button 
+          class="toggle-english-btn" 
+          @click="toggleEnglish(sentence)"
+          title="隐藏/显示英文 (快捷键: =)"
+        >
+          {{ sentence.showEnglish ? '隐藏英文' : '显示英文' }}
         </button>
       <div v-if="isComplete(sentence)" class="correct-indicator">
         ✓ 正确！
@@ -47,10 +54,13 @@ export default {
     }
   },
   mounted() {
-    // 为每个句子添加 userInput 属性
+    // 为每个句子添加 userInput 和 showEnglish 属性
     this.sentences.forEach(sentence => {
       if (!sentence.userInput) {
         sentence.userInput = ''
+      }
+      if (sentence.showEnglish === undefined) {
+        sentence.showEnglish = false
       }
     })
     
@@ -164,6 +174,17 @@ export default {
           this.speakSentence(targetSentence.text);
         }
       }
+      
+      if (event.key === '=' && !event.ctrlKey && !event.altKey && !event.metaKey) {
+        event.preventDefault();
+        if (this.currentFocusedSentence) {
+          this.toggleEnglish(this.currentFocusedSentence);
+        }
+      }
+    },
+    
+    toggleEnglish(sentence) {
+      sentence.showEnglish = !sentence.showEnglish;
     }
   }
 }
@@ -199,7 +220,7 @@ export default {
   flex: 1;
 }
 
-.speak-btn {
+.speak-btn, .toggle-english-btn {
   background: #007bff;
   color: white;
   border: none;
@@ -209,9 +230,10 @@ export default {
   border-radius: 4px;
   transition: all 0.2s;
   white-space: nowrap;
+  margin-left: 8px;
 }
 
-.speak-btn:hover:not(:disabled) {
+.speak-btn:hover:not(:disabled), .toggle-english-btn:hover {
   background-color: #0056b3;
 }
 
@@ -219,6 +241,14 @@ export default {
   background-color: #6c757d;
   cursor: not-allowed;
   opacity: 0.7;
+}
+
+.toggle-english-btn {
+  background: #28a745;
+}
+
+.toggle-english-btn:hover {
+  background-color: #218838;
 }
 
 .sentence-text-zh {
