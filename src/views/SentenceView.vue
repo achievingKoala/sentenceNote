@@ -1,7 +1,9 @@
 <template>
   <div class="sentence-view">
     <div class="sentence-card" v-for="sentence in sentences" :key="sentence.id">
-      <div class="sentence-text">{{ sentence.text }}</div>
+      <div class="sentence-header">
+        <div class="sentence-text">{{ sentence.text }}</div>
+      </div>
       <div class="sentence-text-zh">{{ sentence.text_zh }}</div>
       <div 
         class="sentence-input" 
@@ -9,8 +11,17 @@
         spellcheck="false"
         :data-placeholder="sentence.userInput ? '' : '输入英文句子...'"
         @input="updateInput($event, sentence)"
+        @focus="currentFocusedSentence = sentence"
         :ref="'input-' + sentence.id"
       ></div>
+      <button 
+          class="speak-btn" 
+          @click="speakSentence(sentence.text)" 
+          :disabled="isSpeaking"
+          title="发声 (快捷键: \\)"
+        >
+          {{ isSpeaking ? '播放中...' : '发声 (\\)' }}
+        </button>
       <div v-if="isComplete(sentence)" class="correct-indicator">
         ✓ 正确！
       </div>
@@ -19,12 +30,20 @@
 </template>
 
 <script>
+import { speakText } from './AzureTextToSpeech.js'
+
 export default {
   name: 'SentenceView',
   props: {
     sentences: {
       type: Array,
       default: () => []
+    }
+  },
+  data() {
+    return {
+      isSpeaking: false,
+      currentFocusedSentence: null
     }
   },
   mounted() {
@@ -34,12 +53,21 @@ export default {
         sentence.userInput = ''
       }
     })
+    
+    // 添加快捷键监听
+    document.addEventListener('keydown', this.handleKeydown)
+  },
+  beforeUnmount() {
+    document.removeEventListener('keydown', this.handleKeydown)
   },
   methods: {
     updateInput(event, sentence) {
       const editor = event.target;
       const text = editor.textContent;
       sentence.userInput = text;
+      
+      // 记录当前正在输入的句子
+      this.currentFocusedSentence = sentence;
       
       // 保存光标位置
       const sel = window.getSelection();
@@ -109,6 +137,33 @@ export default {
       const userText = sentence.userInput.toLowerCase().replace(/[^a-zA-Z\s]/g, '').trim();
       const originalText = sentence.text.toLowerCase().replace(/[^a-zA-Z\s]/g, '').trim();
       return userText === originalText;
+    },
+    
+    async speakSentence(text) {
+      if (this.isSpeaking) return;
+      
+      this.isSpeaking = true;
+      try {
+        await speakText(text);
+      } catch (error) {
+        console.error('Speech error:', error);
+      } finally {
+        // 延迟重置状态，防止音频播放完成前就重置
+        setTimeout(() => {
+          this.isSpeaking = false;
+        }, 1000);
+      }
+    },
+    
+    handleKeydown(event) {
+      if (event.key === '\\' && !event.ctrlKey && !event.altKey && !event.metaKey) {
+        event.preventDefault();
+        // 播放当前正在输入的句子，如果没有则播放第一个句子
+        const targetSentence = this.currentFocusedSentence || (this.sentences.length > 0 ? this.sentences[0] : null);
+        if (targetSentence) {
+          this.speakSentence(targetSentence.text);
+        }
+      }
     }
   }
 }
@@ -130,11 +185,40 @@ export default {
   border: 1px solid #e0e0e0;
 }
 
+.sentence-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
 .sentence-text {
   font-size: 16px;
   line-height: 1.6;
   color: #333;
-  margin-bottom: 12px;
+  flex: 1;
+}
+
+.speak-btn {
+  background: #007bff;
+  color: white;
+  border: none;
+  font-size: 12px;
+  cursor: pointer;
+  padding: 6px 12px;
+  border-radius: 4px;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.speak-btn:hover:not(:disabled) {
+  background-color: #0056b3;
+}
+
+.speak-btn:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
+  opacity: 0.7;
 }
 
 .sentence-text-zh {
