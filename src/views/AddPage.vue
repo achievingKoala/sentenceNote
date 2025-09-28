@@ -1,5 +1,11 @@
 <template>
   <div class="container">
+    <select v-model="selectedNotebook" class="dropdown" @change="onNotebookChange">
+      <option value="">选择笔记本</option>
+      <option v-for="notebook in notebooks" :key="notebook.id" :value="notebook.id">
+        {{ notebook.name_zh }} - {{ notebook.name }}
+      </option>
+    </select>
     <input v-model="text" class="input" placeholder="输入内容" />
     <div class="buttons">
       <button @click="save" class="btn">保存</button>
@@ -13,10 +19,30 @@ export default {
   name: 'AddPage',
   data() {
     return {
-      text: ''
+      text: '',
+      notebooks: [],
+      selectedNotebook: ''
     }
   },
+  async mounted() {
+    await this.fetchNotebooks()
+  },
   methods: {
+    async fetchNotebooks() {
+      try {
+        const response = await fetch('http://localhost:5678/webhook/notebooks')
+        this.notebooks = await response.json()
+        const firstNotebook = this.notebooks.find(nb => nb.name === 'first')
+        if (firstNotebook) {
+          this.selectedNotebook = firstNotebook.id
+        }
+      } catch (error) {
+        console.error('获取笔记本失败:', error)
+      }
+    },
+    onNotebookChange() {
+      console.log('选择的笔记本ID:', this.selectedNotebook)
+    },
     save() {
       console.log('保存:', this.text)
     },
@@ -37,6 +63,15 @@ export default {
   justify-content: center;
   height: 100vh;
   gap: 20px;
+}
+
+.dropdown {
+  width: 324px;
+  padding: 12px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  margin-bottom: 10px;
 }
 
 .input {
