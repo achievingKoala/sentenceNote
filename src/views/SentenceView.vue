@@ -35,6 +35,16 @@
         >
           {{ sentence.showEnglish ? '隐藏英文' : '显示英文' }} (快捷键: =)
         </button>
+        <button 
+          class="btn like-btn" 
+          :class="{ 'liked': sentence.is_liked }"
+          @click="toggleLike(sentence)"
+          title="收藏/取消收藏"
+        >
+          {{ sentence.is_liked ? '❤️ 已收藏' : '🤍 收藏' }}
+        </button>
+      <div class="usage-count">完成次数: {{ sentence.usage_count }}</div>
+
       </div>
       <div v-if="sentence.isComplete" class="correct-indicator">
         ✓ 正确！
@@ -200,6 +210,10 @@ export default {
       sentence.showEnglish = !sentence.showEnglish;
     },
     
+    toggleLike(sentence) {
+      sentence.is_liked = !sentence.is_liked;
+    },
+    
     shuffleSentences() {
       for (let i = this.sentences.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
@@ -293,12 +307,34 @@ export default {
   background-color: #218838;
 }
 
+.like-btn {
+  background: #0d528e;
+}
+
+.like-btn:hover {
+  background-color: #5a6268;
+}
+
+.like-btn.liked {
+  background: #dc3545;
+}
+
+.like-btn.liked:hover {
+  background-color: #c82333;
+}
+
 .sentence-text-zh {
   font-size: 14px;
   line-height: 1.5;
   color: #666;
   font-style: italic;
-  margin-bottom: 16px;
+  margin-bottom: 8px;
+}
+
+.usage-count {
+  font-size: 12px;
+  color: #230404;
+  padding: 6px 12px;
 }
 
 .sentence-input {

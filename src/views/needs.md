@@ -62,18 +62,18 @@
    {
        "id": 30,
        "text": "The person you are the most afraid to contradict is yourself.",
-       "count": 0,
+       "usage_count": 0,
        "text_zh": "你最害怕反驳的人，是你自己。",
        "notebook_id": 22,
-       "is_favorite": false
+       "is_liked": false
    },
    {
        "id": 31,
        "text": "An idea starts to be interesting when you get scared of taking it to its logical conclusion.",
-       "count": 0,
+       "usage_count": 0,
        "text_zh": "当一个想法令你害怕将其推向逻辑的终点时，它才开始变得有趣。",
        "notebook_id": 22,
-       "is_favorite": false
+       "is_liked": false
    }
 ]
 ````
@@ -84,8 +84,19 @@
  - 发声按钮 利用 AzureTextToSpeech.js 显示文字 快捷键 \ 防止反复按键
  - 隐藏/显示中文按钮 快捷键 ：= 
  - 随机展示
- - 收藏按钮 快捷键 
+ - 添加收藏/取消收藏 按钮 （is_liked）
+ {
+       "id": 31,
+       "text": "An idea starts to be interesting when you get scared of taking it to its logical conclusion.",
+       "usage_count": 0,
+       "text_zh": "当一个想法令你害怕将其推向逻辑的终点时，它才开始变得有趣。",
+       "notebook_id": 22,
+       "is_liked": false
+   }
+ - todo 收藏按钮 快捷键 
+ - 展示完成次数： usage_count
  - 字体变大一点
+ 
 
 2 分页
 

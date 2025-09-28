@@ -54,7 +54,7 @@ export default {
     async selectNotebook(notebookId) {
       this.currentView = `notebook-${notebookId}`
       try {
-        const response = await fetch(`http://localhost:5678/webhook/allSentencesByNoteBookId?notebookId=${notebookId}`)
+        const response = await fetch(`http://localhost:5678/webhook/sentenceStatsByNotebookId?notebookId=${notebookId}`)
         this.currentSentences = await response.json()
       } catch (error) {
         console.error('获取句子失败:', error)
