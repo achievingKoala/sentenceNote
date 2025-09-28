@@ -1,10 +1,8 @@
 create table public.sentences (
   id serial not null,
   text text not null,
-  count integer not null default 0,
   text_zh text null,
   notebook_id integer null,
-  is_favorite boolean not null default false,
   constraint sentences_pkey primary key (id)
 ) TABLESPACE pg_default;
 
