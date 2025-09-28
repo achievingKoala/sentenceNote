@@ -1,0 +1,302 @@
+{
+  "name": "ToggleLike",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "toggleLike",
+        "httpMethod": "POST",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -448,
+        -96
+      ],
+      "id": "eb76a17c-d2d0-43c7-97b4-f77bf7ec78b3",
+      "name": "Webhook",
+      "webhookId": "cb1dd4a8-d6ea-4337-a84f-1c8d2e9c9130"
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "sentence_likes",
+          "mode": "name"
+        },
+        "where": {
+          "values": [
+            {
+              "column": "sentence_id",
+              "condition": "equal",
+              "value": "={{ $json.body.sentence_id }}"
+            },
+            {
+              "column": "user_id",
+              "condition": "equal",
+              "value": "={{ $json.body.user_id || 1 }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -224,
+        -96
+      ],
+      "id": "check-like",
+      "name": "Check Like",
+      "credentials": {
+        "postgres": {
+          "id": "1IelyHRtO1kOE0Tf",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.length }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        0,
+        -96
+      ],
+      "id": "if-liked",
+      "name": "If Liked"
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "sentence_likes",
+          "mode": "name"
+        },
+        "where": {
+          "values": [
+            {
+              "column": "sentence_id",
+              "condition": "equal",
+              "value": "={{ $('Webhook').item.json.body.sentence_id }}"
+            },
+            {
+              "column": "user_id",
+              "condition": "equal",
+              "value": "={{ $('Webhook').item.json.body.user_id || 1 }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        224,
+        -176
+      ],
+      "id": "delete-like",
+      "name": "Delete Like",
+      "credentials": {
+        "postgres": {
+          "id": "1IelyHRtO1kOE0Tf",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "sentence_likes",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "sentence_id": "={{ $('Webhook').item.json.body.sentence_id }}",
+            "user_id": "={{ $('Webhook').item.json.body.user_id || 1 }}"
+          }
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        224,
+        -16
+      ],
+      "id": "insert-like",
+      "name": "Insert Like",
+      "credentials": {
+        "postgres": {
+          "id": "1IelyHRtO1kOE0Tf",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { \"success\": true, \"liked\": false, \"message\": \"Unliked successfully\" } }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        448,
+        -176
+      ],
+      "id": "respond-unliked",
+      "name": "Respond Unliked"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { \"success\": true, \"liked\": true, \"message\": \"Liked successfully\" } }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        448,
+        -16
+      ],
+      "id": "respond-liked",
+      "name": "Respond Liked"
+    }
+  ],
+  "pinData": {
+    "Webhook": [
+      {
+        "json": {
+          "headers": {
+            "content-type": "application/json"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "sentence_id": 44,
+            "user_id": 1
+          },
+          "webhookUrl": "http://localhost:5678/webhook/toggleLike",
+          "executionMode": "test"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Check Like",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Like": {
+      "main": [
+        [
+          {
+            "node": "If Liked",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If Liked": {
+      "main": [
+        [
+          {
+            "node": "Delete Like",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Insert Like",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete Like": {
+      "main": [
+        [
+          {
+            "node": "Respond Unliked",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert Like": {
+      "main": [
+        [
+          {
+            "node": "Respond Liked",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "c47e32ec-028e-49ef-a39f-cad7f7fc07c5",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "9f057a285dff4c6be807be41c1ee6a8eef4774991a6e3b2db8f42d1b74dc96f0"
+  },
+  "id": "lX3oCarmHMz8kW1E",
+  "tags": []
+}
