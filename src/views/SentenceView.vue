@@ -11,6 +11,9 @@
         @input="updateInput($event, sentence)"
         :ref="'input-' + sentence.id"
       ></div>
+      <div v-if="isComplete(sentence)" class="correct-indicator">
+        ✓ 正确！
+      </div>
     </div>
   </div>
 </template>
@@ -53,7 +56,6 @@ export default {
       // 高亮匹配的单词
       const words = text.split(/(\s+)/).map(word => {
         const cleanWord = word.trim().toLowerCase().replace(/[^a-zA-Z]/g, '');
-        console.log(cleanWord)
         if (cleanWord && sentenceWords.includes(cleanWord)) {
           return `<span class="highlight">${word.replace(/ /g, '&nbsp;')}</span>`;
         }
@@ -99,6 +101,14 @@ export default {
       } catch (e) {
         // 捕获跳出
       }
+    },
+    
+    isComplete(sentence) {
+      // console.log(sentence)
+      if (!sentence.userInput) return false;
+      const userText = sentence.userInput.toLowerCase().replace(/[^a-zA-Z\s]/g, '').trim();
+      const originalText = sentence.text.toLowerCase().replace(/[^a-zA-Z\s]/g, '').trim();
+      return userText === originalText;
     }
   }
 }
@@ -160,5 +170,12 @@ export default {
 
 .sentence-input .highlight {
   color: green;
+}
+
+.correct-indicator {
+  margin-top: 8px;
+  color: #28a745;
+  font-weight: bold;
+  font-size: 14px;
 }
 </style>
