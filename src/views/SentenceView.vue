@@ -31,7 +31,7 @@
           {{ sentence.showEnglish ? '隐藏英文' : '显示英文' }} (快捷键: =)
         </button>
       </div>
-      <div v-if="isComplete(sentence)" class="correct-indicator">
+      <div v-if="sentence.isComplete" class="correct-indicator">
         ✓ 正确！
       </div>
     </div>
@@ -56,7 +56,7 @@ export default {
     }
   },
   mounted() {
-    // 为每个句子添加 userInput 和 showEnglish 属性
+    // 为每个句子添加 userInput、showEnglish 和 isComplete 属性
     this.sentences.forEach(sentence => {
       if (!sentence.userInput) {
         sentence.userInput = ''
@@ -64,6 +64,7 @@ export default {
       if (sentence.showEnglish === undefined) {
         sentence.showEnglish = false
       }
+      sentence.isComplete = false
     })
     
     // 添加快捷键监听
@@ -110,6 +111,9 @@ export default {
       
       // 恢复光标位置
       this.restoreCaret(editor, caretOffset);
+      
+      // 检查是否完成
+      this.checkComplete(sentence);
     },
     
     restoreCaret(container, offset) {
@@ -143,12 +147,14 @@ export default {
       }
     },
     
-    isComplete(sentence) {
-      // console.log(sentence)
-      if (!sentence.userInput) return false;
-      const userText = sentence.userInput.toLowerCase().replace(/[^a-zA-Z\s]/g, '').trim();
-      const originalText = sentence.text.toLowerCase().replace(/[^a-zA-Z\s]/g, '').trim();
-      return userText === originalText;
+    checkComplete(sentence) {
+      if (!sentence.userInput) {
+        sentence.isComplete = false;
+        return;
+      }
+      const userText = sentence.userInput.toLowerCase().replace(/[^a-zA-Z\s]/g, '').replace(/\s+/g, ' ').trim();
+      const originalText = sentence.text.toLowerCase().replace(/[^a-zA-Z\s]/g, '').replace(/\s+/g, ' ').trim();
+      sentence.isComplete = userText === originalText;
     },
     
     async speakSentence(text) {
