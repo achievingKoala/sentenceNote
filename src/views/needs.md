@@ -97,4 +97,15 @@
 
 
 ## 增加句子功能
-AddPage.vue  加一个下拉框 内容来自接口 - http://localhost:5678/webhook/notebooks
+1. AddPage.vue  加一个下拉框 内容来自接口 - http://localhost:5678/webhook/notebooks
+2. AddPage.vue 加一个输入框，用户输入英文后自动翻译成中文
+3. AddPage.vue 保存按钮触发这个接口：
+http://localhost:5678/webhook/createSentence
+```
+"body": {
+   "text": 
+   "text_zh": 
+   "notebook_id": ,
+   },
+```
+4 AddPage.vue 添加成功后不要alert 提醒， 翻译接口请求时页面上有一个加载标志
