@@ -14,21 +14,23 @@
         @focus="currentFocusedSentence = sentence"
         :ref="'input-' + sentence.id"
       ></div>
-      <button 
-          class="speak-btn" 
+      <div class="button-group">
+        <button 
+          class="btn speak-btn" 
           @click="speakSentence(sentence.text)" 
           :disabled="isSpeaking"
           title="发声 (快捷键: \\)"
         >
-          {{ isSpeaking ? '播放中...' : '发声 (\\)' }}
+          {{ isSpeaking ? '播放中...' : '发声' }} (快捷键: \)
         </button>
         <button 
-          class="toggle-english-btn" 
+          class="btn toggle-english-btn" 
           @click="toggleEnglish(sentence)"
           title="隐藏/显示英文 (快捷键: =)"
         >
-          {{ sentence.showEnglish ? '隐藏英文' : '显示英文' }}
+          {{ sentence.showEnglish ? '隐藏英文' : '显示英文' }} (快捷键: =)
         </button>
+      </div>
       <div v-if="isComplete(sentence)" class="correct-indicator">
         ✓ 正确！
       </div>
@@ -220,9 +222,13 @@ export default {
   flex: 1;
 }
 
-.speak-btn, .toggle-english-btn {
-  background: #007bff;
-  color: white;
+.button-group {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.btn {
   border: none;
   font-size: 12px;
   cursor: pointer;
@@ -230,10 +236,14 @@ export default {
   border-radius: 4px;
   transition: all 0.2s;
   white-space: nowrap;
-  margin-left: 8px;
+  color: white;
 }
 
-.speak-btn:hover:not(:disabled), .toggle-english-btn:hover {
+.speak-btn {
+  background: #007bff;
+}
+
+.speak-btn:hover:not(:disabled) {
   background-color: #0056b3;
 }
 
