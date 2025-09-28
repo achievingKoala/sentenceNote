@@ -1,0 +1,174 @@
+{
+  "name": "QuerySentenceByNotebookId",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "allSentencesByNoteBookId",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -448,
+        -96
+      ],
+      "id": "eb76a17c-d2d0-43c7-97b4-f77bf7ec78b3",
+      "name": "Webhook",
+      "webhookId": "cb1dd4a8-d6ea-4337-a84f-1c8d2e9c9130"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json.data }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        224,
+        -96
+      ],
+      "id": "7b6ff666-45a0-4f56-9980-0b7a8b3bc2d5",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "sentences",
+          "mode": "name"
+        },
+        "returnAll": true,
+        "where": {
+          "values": [
+            {
+              "column": "notebook_id",
+              "value": "={{ $json.query.notebookId }}"
+            }
+          ]
+        },
+        "sort": {
+          "values": [
+            {
+              "column": "id"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -224,
+        -96
+      ],
+      "id": "d6bf5006-1428-4a71-9ea6-028c78e103c9",
+      "name": "Select rows from a table",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "1IelyHRtO1kOE0Tf",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        0,
+        -96
+      ],
+      "id": "85641456-27a1-43d0-9b2d-595d9d9143a9",
+      "name": "Aggregate"
+    }
+  ],
+  "pinData": {
+    "Webhook": [
+      {
+        "json": {
+          "headers": {
+            "host": "localhost:5678",
+            "connection": "keep-alive",
+            "sec-ch-ua-platform": "\"macOS\"",
+            "___internal-request-id": "47d15c54-55c8-46fb-bd86-a5e36fde56b3",
+            "sec-ch-ua": "\"Not;A=Brand\";v=\"99\", \"Google Chrome\";v=\"139\", \"Chromium\";v=\"139\"",
+            "sec-ch-ua-mobile": "?0",
+            "accept": "*/*",
+            "sec-fetch-site": "none",
+            "sec-fetch-mode": "cors",
+            "sec-fetch-dest": "empty",
+            "sec-fetch-storage-access": "active",
+            "accept-encoding": "gzip, deflate, br, zstd",
+            "accept-language": "zh-CN,zh;q=0.9,en;q=0.8",
+            "cookie": "_ga=GA1.1.1987701915.1726726871; ajs_anonymous_id=1a184195-b1f0-4ba8-bf01-45cdc0387830; session=.eJytV9uO2zYQ_Rc-ewHeL_srdWCIN9SoY7teC20R5N_LmRFlyV4nm2DzoGgpcjhzzpmLv7HduVy-DsdyvLLX62UsG5bGy6X9uft7LG_X_en4xl7_-MbSqa2m6244vv1TLuyVb1j593wYjgPsYa9sO1qny3Z01uXtqEsxbYVXtR19sgJWFN-OJqa0HRXnAr4m2CNEbevB6PZuVOlfTVC-PavkaGHoX531sDPjSpURLeNTh-0YfGp7rFftFq-Na_tD5WhTsg3bZ_YqNux07oGxZ6ba5nZWRfQ5lMdPZRj6J8tlu8ioHGCDj7jBiAiLqcbus4-xIWOkGpZ-si8b1qF-gLEfzM2UjboFFbiAewuAo6tRs5O6DBBsygCUh6ujtWtAahW1-Xb971zaTV_Hw3V_PpRd-vO0T4V933yMZcvBoON-5jGZCs-oZu6Sg2fOEEIEXrxA94SywDivXRUUiPdDvAvcSA8r1qBmgHFpYIULVBectVLYWRuopQXL8p7lhdu64PvCVKM1khHizgFopnDZN_f3YMA3UKzNaiLaaAufgBefIRxrhQIjQLS1tpJgQhadFCs9B2ck2FEJ0KiVPyiBkqg5EO_4XQLoCKj3NaOLBMmJOnSdBB8EvKNCqm9nw5D9J2nDV0oBqSEdsAJYjPHBPaN5RgFTNYCMcCZA1ovUqWnrsYdAp0IItltugEGOewv6qREz1NtntK60oe60cX810Zq4xYiahSCMxEXvIQd9Li2oYGPBRWtKwPQXPUZTwAdQ0QOnksMtpnjIYqnzWplGQLJQaM0p0QFsWuKoBARKEGgSrc38Uoq9BzWsE3Skil_nWjxyTazdo3RjDTh6rNs-lgzrHBJEhtxP0bsuEWyqhKeq7YDrYniH5Zmi2o2q64F0Rew30Nb1X_82-3P1gJIuC1RjodP0SUCSlsB79XNcYH3j6kEDxAg5Rrw8z1-A8SPgUOFtxkqHlIrnOkHAApUvH5L8rI6wcJ7qOTUpXxMUmQDN0fNk1_PAY5c32qd1OzYKKvzU8bFOGhHC3Bc8NF9TocwSXNNOnCiaO6SxuGLf3LG_HEvW4wqW_YV7VmIxSZl6hK6u9j5FMTYFVdqApTX2Cg-aX4wEpDenue2Tw5SnEldc4LRZVdkHDFcAPS-qnjfjsAFdYx4_CBlw70cTBfWLVXcgygSQNYWz6DWkH-odNwR-RzmrJsyeNQ9K7x-3hGULWTYDE1FAxs3tx0SDdRMk8vmVd5KUvU9vb8HJwQ0I07C8dIf_fvW6G9B1fzjsYsPtr2cYT5N01gJnTaAtOyQb4Qr4tLm8w4BRoXbkJrS0iP1oqxhQYQoOYzjsTe01KY0pELrjlJ4TJx90p_cyUuDUPp7ULucKDg_pNnCWoJ_XxqksoH3K8UVBcD9l72edDpKoiSh8LnRdKSu5vaOCL7dfbNfTeZ8eMn7566G3Svgp44MX_b1NhfNcvPhpsmHjW7nsACbmB2e1j_WFGyVfdDLDi3cxvEjDbUmq_Zct-_4_mLh1wQ.aKMv6g.05i1qW4Wy3_eHurYu6BKf8pqSnw; screenResolution=1440x900; JSESSIONID.d02e1b94=node012yx5fvgm7hyx13boqzld6bnuc4.node0; jenkins-timestamper-offset=-28800000; JSESSIONID.441c1d8a=node01wwj8kjki80pqgkpmtii75bic0.node0; JSESSIONID.dff17c32=node0kouu9x7np0f21m2n9zgbcuhzd3.node0; JSESSIONID.38f374e4=node01lrrfwn4x32810adxwxrhznzf0.node0; jenkins-timestamper=system; jenkins-timestamper-local=true; JSESSIONID.98f57570=node034phil10ya5011jc6w7clpq3v1.node0; _ga_R7CKHJ0BNY=GS2.1.s1757218808$o17$g1$t1757221392$j60$l0$h0; _streamlit_xsrf=2|752a7b03|efd4a834feccc77dba4b7ed189ff517d|1757597802; locale=zh-Hans; rl_page_init_referrer=RudderEncrypt%3AU2FsdGVkX1810nZbpWBxEqCQeT3IwdeNpSjJ9tdhd9w%3D; rl_page_init_referring_domain=RudderEncrypt%3AU2FsdGVkX19USdAJzWGw1Z8IGqh8Rkw1eNF7y9nGOJU%3D; rl_anonymous_id=RudderEncrypt%3AU2FsdGVkX189%2FCplTE4vPRAQ9zds7ESwt7lbwlUJ5kgerZm9tWfFrnj%2Bs5UtQsuxz8iGnhqnD2Ri744HaV1E1Q%3D%3D; rl_user_id=RudderEncrypt%3AU2FsdGVkX1%2B0bSdbqhJkYQYDSLV1OTdtF7AYlJcf2nAvziaofafkq8YRoz8c1wuMxi8rJe%2BRXVXtKO7QtrBE%2F4nVa9c%2FyVz3kJGtFfARX58ks3HvDMP1TVNpQ4dsRsXM5KFUZfXHOJLaeZ1p3FQtBYWaMgUebtRDFF58kIvcip8%3D; rl_trait=RudderEncrypt%3AU2FsdGVkX1%2FIIrwvaVH%2FOuDQVWaF2gqWYQyMiiX8kQd9zcJi%2BW5fuJg6nLYzWKNHgyhN85ohEF86Pi5bUem8k%2F04Rl5016ORtRRxDuH3OoVtqNNZu%2FLwP%2FehdtXXCJJnco8WRlkJdhjzp0m9NF73su9Vc3KLadUXwymWseIA9Ac%3D; ph_phc_4URIAm1uYfJO7j8kWSe0J8lc8IqnstRLS7Jx8NcakHo_posthog=%7B%22distinct_id%22%3A%229f057a285dff4c6be807be41c1ee6a8eef4774991a6e3b2db8f42d1b74dc96f0%23d22d8cb6-1361-4a1d-8df6-94a10193b909%22%2C%22%24sesid%22%3A%5B1758985269264%2C%2201998bb0-6b3a-7dce-9fb5-d04c96dc8f48%22%2C1758985218874%5D%2C%22%24epp%22%3Atrue%2C%22%24initial_person_info%22%3A%7B%22r%22%3A%22%24direct%22%2C%22u%22%3A%22http%3A%2F%2Flocalhost%3A5678%2Fsetup%22%7D%7D; rl_session=RudderEncrypt%3AU2FsdGVkX1%2FQ%2FsdHyHBO6MTuabBtwFcnAhsOj4MAcWmXpzWWNw4wIYXhnvcbyJPtJPnw5f0otPBSlVNcHBtjx5eN5ufgk6CpC2Ngf3dCIU0QiazhBimP6fjvaGSMnPYZI1Avhd%2FD5NKqsxfU8RykwA%3D%3D"
+          },
+          "params": {},
+          "query": {
+            "notebookId": "23"
+          },
+          "body": {},
+          "webhookUrl": "http://localhost:5678/webhook-test/allSentences",
+          "executionMode": "test"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Select rows from a table",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Select rows from a table": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "c47e32ec-028e-49ef-a39f-cad7f7fc07c5",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "9f057a285dff4c6be807be41c1ee6a8eef4774991a6e3b2db8f42d1b74dc96f0"
+  },
+  "id": "lX3oCarmHMz8kW1D",
+  "tags": []
+}

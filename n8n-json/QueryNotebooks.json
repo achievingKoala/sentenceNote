@@ -1,0 +1,118 @@
+{
+  "name": "QueryNotebooks",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "notebooks",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "ee4b42a5-9a6d-4951-a401-dc41af5fd8b4",
+      "name": "Webhook",
+      "webhookId": "6fa9e4a2-d9a8-4b0a-99c3-2af93276922e"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "select id,name,name_zh from notebooks;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        208,
+        0
+      ],
+      "id": "b90ed7c3-b721-4303-a6ca-fad38bcd5465",
+      "name": "Execute a SQL query",
+      "credentials": {
+        "postgres": {
+          "id": "1IelyHRtO1kOE0Tf",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        416,
+        0
+      ],
+      "id": "516919ab-f261-4112-9ff2-6a567169b3ad",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json.data }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        624,
+        0
+      ],
+      "id": "87b2a35a-bc59-4ae8-97e0-ee240b874d71",
+      "name": "Respond to Webhook"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Execute a SQL query",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "94264147-7903-42e6-96fe-1bafd6273d6a",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "9f057a285dff4c6be807be41c1ee6a8eef4774991a6e3b2db8f42d1b74dc96f0"
+  },
+  "id": "izb0NeFbJFUtJIDA",
+  "tags": []
+}
