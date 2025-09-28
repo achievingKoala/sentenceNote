@@ -1,15 +1,15 @@
 <template>
   <div class="container">
+    <textarea v-model="text" class="input" placeholder="输入英文" @input="translateText"></textarea>
+    <textarea v-model="text_zh" class="input" placeholder="中文翻译" readonly></textarea>
     <select v-model="selectedNotebook" class="dropdown" @change="onNotebookChange">
       <option value="">选择笔记本</option>
       <option v-for="notebook in notebooks" :key="notebook.id" :value="notebook.id">
         {{ notebook.name_zh }} - {{ notebook.name }}
       </option>
     </select>
-    <input v-model="text" class="input" placeholder="输入内容" />
     <div class="buttons">
       <button @click="save" class="btn">保存</button>
-      <button @click="speak" class="btn">发声</button>
     </div>
   </div>
 </template>
@@ -20,8 +20,10 @@ export default {
   data() {
     return {
       text: '',
+      text_zh: '',
       notebooks: [],
-      selectedNotebook: ''
+      selectedNotebook: '',
+      translateTimer: null
     }
   },
   async mounted() {
@@ -43,13 +45,61 @@ export default {
     onNotebookChange() {
       console.log('选择的笔记本ID:', this.selectedNotebook)
     },
-    save() {
-      console.log('保存:', this.text)
+    async save() {
+      if (!this.text.trim() || !this.text_zh.trim() || !this.selectedNotebook) {
+        alert('请填写完整信息')
+        return
+      }
+      
+      try {
+        const response = await fetch('http://localhost:5678/webhook/createSentence', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            text: this.text.trim(),
+            text_zh: this.text_zh.trim(),
+            notebook_id: this.selectedNotebook
+          })
+        })
+        
+        if (response.ok) {
+          alert('保存成功')
+          this.text = ''
+          this.text_zh = ''
+        } else {
+          alert('保存失败')
+        }
+      } catch (error) {
+        console.error('保存失败:', error)
+        alert('保存失败')
+      }
     },
     speak() {
       if (this.text) {
         speechSynthesis.speak(new SpeechSynthesisUtterance(this.text))
       }
+    },
+    translateText() {
+      if (this.translateTimer) {
+        clearTimeout(this.translateTimer)
+      }
+      this.translateTimer = setTimeout(async () => {
+        if (this.text.trim()) {
+          try {
+            const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(this.text)}&langpair=en|zh`
+            const response = await fetch(url)
+            const data = await response.json()
+            this.text_zh = data.responseData.translatedText
+          } catch (error) {
+            console.error('翻译失败:', error)
+            this.text_zh = '翻译失败'
+          }
+        } else {
+          this.text_zh = ''
+        }
+      }, 500)
     }
   }
 }
@@ -75,11 +125,13 @@ export default {
 }
 
 .input {
-  width: 300px;
-  padding: 12px;
-  font-size: 16px;
+  width: 400px;
+  height: 120px;
+  padding: 24px 16px;
+  font-size: 18px;
   border: 1px solid #ccc;
   border-radius: 4px;
+  resize: vertical;
 }
 
 .buttons {
