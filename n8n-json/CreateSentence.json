@@ -1,0 +1,135 @@
+{
+  "name": "CreateSentence",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "createSentence",
+        "httpMethod": "POST",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -448,
+        -96
+      ],
+      "id": "eb76a17c-d2d0-43c7-97b4-f77bf7ec78b3",
+      "name": "Webhook",
+      "webhookId": "cb1dd4a8-d6ea-4337-a84f-1c8d2e9c9130"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { \"success\": true, \"id\": $json.id, \"message\": \"Sentence created successfully\" } }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        224,
+        -96
+      ],
+      "id": "7b6ff666-45a0-4f56-9980-0b7a8b3bc2d5",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "sentences",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "text": "={{ $json.body.text }}",
+            "text_zh": "={{ $json.body.text_zh }}",
+            "notebook_id": "={{ $json.body.notebook_id }}",
+            "count": "={{ $json.body.count || 0 }}",
+            "is_favorite": "={{ $json.body.is_favorite || false }}"
+          }
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -224,
+        -96
+      ],
+      "id": "d6bf5006-1428-4a71-9ea6-028c78e103c9",
+      "name": "Insert into table",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "1IelyHRtO1kOE0Tf",
+          "name": "Postgres account"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "Webhook": [
+      {
+        "json": {
+          "headers": {
+            "content-type": "application/json"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "text": "The best revenge on a liar is to convince him that you believe what he said.",
+            "text_zh": "对付说谎者的最佳报复，就是让他相信你相信了他的话。",
+            "notebook_id": 23,
+            "count": 0,
+            "is_favorite": false
+          },
+          "webhookUrl": "http://localhost:5678/webhook/createSentence",
+          "executionMode": "test"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Insert into table",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert into table": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "c47e32ec-028e-49ef-a39f-cad7f7fc07c5",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "9f057a285dff4c6be807be41c1ee6a8eef4774991a6e3b2db8f42d1b74dc96f0"
+  },
+  "id": "lX3oCarmHMz8kW1E",
+  "tags": []
+}
