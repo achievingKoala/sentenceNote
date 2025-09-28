@@ -1,10 +1,5 @@
-import React, { useState } from "react";
-
 const API_KEY = "BxmaEznl4foxzzjLNTxmZ7F8ibK9tNtmm1Cbsyo7Yi45KdebV0oPJQQJ99AKACYeBjFXJ3w3AAAYACOGd5KZ";
-const REGION = "eastus"; // e.g., "eastus"
-
-// import audioPath from '../public/new-note.mp3'
-const audioPath = require("./new-note.mp3");
+const REGION = "eastus";
 
 export const speakText = async (text) => {
   if (text.trim() === "") return;
@@ -43,37 +38,13 @@ export const speakText = async (text) => {
   }
 };
 
-const AzureTextToSpeech = () => {
-  const [text, setText] = useState("");
-
-  // 在这里设置你的 Azure API 密钥和区域
-  
-
-  return (
-    <div style={{ padding: "20px" }}>
-      <h2>Azure Text to Speech</h2>
-      <textarea
-        rows="4"
-        cols="50"
-        placeholder="Enter text to speak..."
-        value={text}
-        onChange={(e) => setText(e.target.value)}
-      />
-      <br />
-      <button onClick={() => speakText(text)} style={{ marginTop: "10px" }}>
-        Speak
-      </button>
-      <br />
-      <button onClick={() => {
-        const successSound = new Audio(audioPath);
-        successSound.play().catch(error => {
-          console.error('Error playing audio:', error);
-        });
-      }} style={{ marginTop: "10px" }}>
-        Play Success Sound
-      </button>
-    </div>
-  );
+export const playSuccessSound = () => {
+  try {
+    const successSound = new Audio('./new-note.mp3');
+    successSound.play().catch(error => {
+      console.error('Error playing audio:', error);
+    });
+  } catch (error) {
+    console.error('Error loading audio:', error);
+  }
 };
-
-export default AzureTextToSpeech;
