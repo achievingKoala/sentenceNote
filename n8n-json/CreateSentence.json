@@ -3,18 +3,18 @@
   "nodes": [
     {
       "parameters": {
-        "path": "createSentence",
         "httpMethod": "POST",
+        "path": "createSentence",
         "responseMode": "responseNode",
         "options": {}
       },
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2.1,
       "position": [
-        -448,
-        -96
+        0,
+        0
       ],
-      "id": "eb76a17c-d2d0-43c7-97b4-f77bf7ec78b3",
+      "id": "e1c1e957-1871-4e37-b4ab-a36ae2cae826",
       "name": "Webhook",
       "webhookId": "cb1dd4a8-d6ea-4337-a84f-1c8d2e9c9130"
     },
@@ -27,15 +27,14 @@
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.4,
       "position": [
-        224,
-        -96
+        448,
+        0
       ],
-      "id": "7b6ff666-45a0-4f56-9980-0b7a8b3bc2d5",
+      "id": "4e78cca9-feff-43a1-9ff0-6ee13a08d6b4",
       "name": "Respond to Webhook"
     },
     {
       "parameters": {
-        "operation": "insert",
         "schema": {
           "__rl": true,
           "mode": "list",
@@ -51,20 +50,82 @@
           "value": {
             "text": "={{ $json.body.text }}",
             "text_zh": "={{ $json.body.text_zh }}",
-            "notebook_id": "={{ $json.body.notebook_id }}",
-            "count": "={{ $json.body.count || 0 }}",
-            "is_favorite": "={{ $json.body.is_favorite || false }}"
-          }
+            "notebook_id": "={{ $json.body.notebook_id }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "text",
+              "displayName": "text",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "count",
+              "displayName": "count",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "text_zh",
+              "displayName": "text_zh",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "notebook_id",
+              "displayName": "notebook_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "is_favorite",
+              "displayName": "is_favorite",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
         },
         "options": {}
       },
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.6,
       "position": [
-        -224,
-        -96
+        224,
+        0
       ],
-      "id": "d6bf5006-1428-4a71-9ea6-028c78e103c9",
+      "id": "9233bf00-22ef-4929-bc30-b8beae8e3e9e",
       "name": "Insert into table",
       "alwaysOutputData": true,
       "credentials": {
@@ -87,7 +148,7 @@
           "body": {
             "text": "The best revenge on a liar is to convince him that you believe what he said.",
             "text_zh": "对付说谎者的最佳报复，就是让他相信你相信了他的话。",
-            "notebook_id": 23,
+            "notebook_id": 44,
             "count": 0,
             "is_favorite": false
           },
@@ -125,11 +186,17 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "c47e32ec-028e-49ef-a39f-cad7f7fc07c5",
+  "versionId": "d749f702-f79e-4fdc-ab92-6a2a425afb88",
   "meta": {
-    "templateCredsSetupCompleted": true,
     "instanceId": "9f057a285dff4c6be807be41c1ee6a8eef4774991a6e3b2db8f42d1b74dc96f0"
   },
-  "id": "lX3oCarmHMz8kW1E",
-  "tags": []
+  "id": "jwsRXAlNOKa7j6eH",
+  "tags": [
+    {
+      "name": "SentencesApp",
+      "id": "OLDHbWozdAzNOy0K",
+      "createdAt": "2025-09-29T12:54:25.301Z",
+      "updatedAt": "2025-09-29T12:54:25.301Z"
+    }
+  ]
 }

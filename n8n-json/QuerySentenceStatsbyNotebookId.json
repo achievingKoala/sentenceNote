@@ -1,4 +1,5 @@
 {
+  "name": "QuerySentenceStatsbyNotebookId",
   "nodes": [
     {
       "parameters": {
@@ -117,6 +118,38 @@
       "name": "Empty array"
     }
   ],
+  "pinData": {
+    "Webhook": [
+      {
+        "json": {
+          "headers": {
+            "host": "localhost:5678",
+            "connection": "keep-alive",
+            "sec-ch-ua-platform": "\"macOS\"",
+            "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36",
+            "sec-ch-ua": "\"Not;A=Brand\";v=\"99\", \"Google Chrome\";v=\"139\", \"Chromium\";v=\"139\"",
+            "sec-ch-ua-mobile": "?0",
+            "accept": "*/*",
+            "origin": "http://localhost:5173",
+            "sec-fetch-site": "same-site",
+            "sec-fetch-mode": "cors",
+            "sec-fetch-dest": "empty",
+            "referer": "http://localhost:5173/",
+            "accept-encoding": "gzip, deflate, br, zstd",
+            "accept-language": "zh-CN,zh;q=0.9,en;q=0.8",
+            "if-none-match": "W/\"4-TplQofIwX1bTWMrSPyggP7Oqy+8\""
+          },
+          "params": {},
+          "query": {
+            "notebookId": "52"
+          },
+          "body": {},
+          "webhookUrl": "http://localhost:5678/webhook/sentenceStatsByNotebookId",
+          "executionMode": "production"
+        }
+      }
+    ]
+  },
   "connections": {
     "Webhook": {
       "main": [
@@ -170,37 +203,21 @@
       ]
     }
   },
-  "pinData": {
-    "Webhook": [
-      {
-        "headers": {
-          "host": "localhost:5678",
-          "connection": "keep-alive",
-          "sec-ch-ua-platform": "\"macOS\"",
-          "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36",
-          "sec-ch-ua": "\"Not;A=Brand\";v=\"99\", \"Google Chrome\";v=\"139\", \"Chromium\";v=\"139\"",
-          "sec-ch-ua-mobile": "?0",
-          "accept": "*/*",
-          "origin": "http://localhost:5173",
-          "sec-fetch-site": "same-site",
-          "sec-fetch-mode": "cors",
-          "sec-fetch-dest": "empty",
-          "referer": "http://localhost:5173/",
-          "accept-encoding": "gzip, deflate, br, zstd",
-          "accept-language": "zh-CN,zh;q=0.9,en;q=0.8",
-          "if-none-match": "W/\"4-TplQofIwX1bTWMrSPyggP7Oqy+8\""
-        },
-        "params": {},
-        "query": {
-          "notebookId": "52"
-        },
-        "body": {},
-        "webhookUrl": "http://localhost:5678/webhook/sentenceStatsByNotebookId",
-        "executionMode": "production"
-      }
-    ]
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
   },
+  "versionId": "b1f1b05b-b2fc-49cd-9fa9-034ea9ba0ae5",
   "meta": {
     "instanceId": "9f057a285dff4c6be807be41c1ee6a8eef4774991a6e3b2db8f42d1b74dc96f0"
-  }
+  },
+  "id": "QmrejZX7nbYUc1j6",
+  "tags": [
+    {
+      "name": "SentencesApp",
+      "id": "OLDHbWozdAzNOy0K",
+      "createdAt": "2025-09-29T12:54:25.301Z",
+      "updatedAt": "2025-09-29T12:54:25.301Z"
+    }
+  ]
 }

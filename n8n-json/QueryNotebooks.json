@@ -108,11 +108,18 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "94264147-7903-42e6-96fe-1bafd6273d6a",
+  "versionId": "b17cd6cb-2a82-47d9-be76-54e2a767e49a",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "9f057a285dff4c6be807be41c1ee6a8eef4774991a6e3b2db8f42d1b74dc96f0"
   },
   "id": "izb0NeFbJFUtJIDA",
-  "tags": []
+  "tags": [
+    {
+      "name": "SentencesApp",
+      "id": "OLDHbWozdAzNOy0K",
+      "createdAt": "2025-09-29T12:54:25.301Z",
+      "updatedAt": "2025-09-29T12:54:25.301Z"
+    }
+  ]
 }

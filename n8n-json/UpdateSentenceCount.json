@@ -1,4 +1,5 @@
 {
+  "name": "UpdateSentenceCount",
   "nodes": [
     {
       "parameters": {
@@ -58,6 +59,24 @@
       "onError": "continueRegularOutput"
     }
   ],
+  "pinData": {
+    "Webhook": [
+      {
+        "json": {
+          "headers": {
+            "content-type": "application/json"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "sentenceId": 33
+          },
+          "webhookUrl": "http://localhost:5678/webhook/addSentenceCount",
+          "executionMode": "test"
+        }
+      }
+    ]
+  },
   "connections": {
     "Webhook": {
       "main": [
@@ -82,24 +101,22 @@
       ]
     }
   },
-  "pinData": {
-    "Webhook": [
-      {
-        "headers": {
-          "content-type": "application/json"
-        },
-        "params": {},
-        "query": {},
-        "body": {
-          "sentenceId": 33
-        },
-        "webhookUrl": "http://localhost:5678/webhook/addSentenceCount",
-        "executionMode": "test"
-      }
-    ]
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
   },
+  "versionId": "e00ff593-7a3b-4fd3-9db7-43c9bf9c6201",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "9f057a285dff4c6be807be41c1ee6a8eef4774991a6e3b2db8f42d1b74dc96f0"
-  }
+  },
+  "id": "WZkOSXXRjQdGry1g",
+  "tags": [
+    {
+      "name": "SentencesApp",
+      "id": "OLDHbWozdAzNOy0K",
+      "createdAt": "2025-09-29T12:54:25.301Z",
+      "updatedAt": "2025-09-29T12:54:25.301Z"
+    }
+  ]
 }
