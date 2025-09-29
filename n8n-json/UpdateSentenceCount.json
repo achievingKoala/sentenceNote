@@ -1,0 +1,89 @@
+{
+  "name": "Update Sentence Count",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "addSentenceCount",
+        "httpMethod": "POST"
+      },
+      "id": "webhook-trigger",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [240, 300],
+      "webhookId": "addSentenceCount"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO public.sentence_counts(user_id, sentence_id, usage_count)\nVALUES ({{ $json.userId }}, {{ $json.sentenceId }}, 1)\nON CONFLICT (user_id, sentence_id) DO UPDATE\nSET usage_count = public.sentence_counts.usage_count + 1;",
+        "options": {}
+      },
+      "id": "postgres-node",
+      "name": "PostgreSQL",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 1,
+      "position": [460, 300],
+      "credentials": {
+        "postgres": {
+          "id": "your-postgres-credential-id",
+          "name": "PostgreSQL account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\"success\": true}"
+      },
+      "id": "respond-node",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [680, 300]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "PostgreSQL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PostgreSQL": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {},
+  "versionId": "1",
+  "pinData": {
+    "Webhook": [
+      {
+        "headers": {
+          "content-type": "application/json"
+        },
+        "params": {},
+        "query": {},
+        "body": {
+          "sentenceId": 33
+        },
+        "webhookUrl": "http://localhost:5678/webhook/addSentenceCount",
+        "executionMode": "test"
+      }
+    ]
+  }
+}
