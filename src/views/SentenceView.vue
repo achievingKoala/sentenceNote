@@ -38,10 +38,11 @@
         <button 
           class="btn like-btn" 
           :class="{ 'liked': sentence.is_liked }"
+          :disabled="sentence.isLiking"
           @click="toggleLike(sentence)"
           title="收藏/取消收藏"
         >
-          {{ sentence.is_liked ? '❤️ 已收藏' : '🤍 收藏' }}
+          {{ sentence.isLiking ? '处理中...' : (sentence.is_liked ? '❤️ 已收藏' : '🤍 收藏') }}
         </button>
       <div class="usage-count">完成次数: {{ sentence.usage_count }}</div>
 
@@ -80,6 +81,7 @@ export default {
         sentence.showEnglish = false
       }
       sentence.isComplete = false
+      sentence.isLiking = false
     })
     
     // 添加快捷键监听
@@ -210,8 +212,30 @@ export default {
       sentence.showEnglish = !sentence.showEnglish;
     },
     
-    toggleLike(sentence) {
-      sentence.is_liked = !sentence.is_liked;
+    async toggleLike(sentence) {
+      if (sentence.isLiking) return;
+      
+      sentence.isLiking = true;
+      try {
+        const response = await fetch('http://localhost:5678/webhook/toggleLike', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            sentence_id: sentence.id
+          })
+        });
+        
+        const result = await response.json();
+        if (result.success) {
+          sentence.is_liked = result.liked;
+        }
+      } catch (error) {
+        console.error('Toggle like error:', error);
+      } finally {
+        sentence.isLiking = false;
+      }
     },
     
     shuffleSentences() {

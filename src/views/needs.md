@@ -94,6 +94,15 @@
        "is_liked": false
    }
  - todo 收藏按钮 快捷键 
+ [toggleLike](http://localhost:5678/webhook/toggleLike)
+  request body:
+   {
+   "sentence_id": 44
+   }
+   "responseBody": "={{ { \"success\": true, \"liked\": true, \"message\": \"Liked successfully\" } }}",
+   or
+   "responseBody": "={{ { \"success\": true, \"liked\": false, \"message\": \"Unliked successfully\" } }}",
+   发送请求时按钮要禁用
  - 展示完成次数： usage_count
  - 字体变大一点
  
