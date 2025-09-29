@@ -2,7 +2,7 @@
   <div class="container">
     <textarea v-model="text" class="input" placeholder="输入英文" @input="translateText"></textarea>
     <div class="translate-container">
-      <textarea v-model="text_zh" class="input" placeholder="中文翻译" readonly></textarea>
+      <textarea v-model="text_zh" class="input" placeholder="中文翻译" ></textarea>
       <div v-if="isTranslating" class="loading-indicator">翻译中...</div>
     </div>
     <select v-model="selectedNotebook" class="dropdown" @change="onNotebookChange">
