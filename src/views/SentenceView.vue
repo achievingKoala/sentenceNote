@@ -171,10 +171,12 @@ export default {
       }
       const userText = sentence.userInput.toLowerCase().replace(/[^a-zA-Z\s]/g, '').replace(/\s+/g, ' ').trim();
       const originalText = sentence.text.toLowerCase().replace(/[^a-zA-Z\s]/g, '').replace(/\s+/g, ' ').trim();
+      const wasComplete = sentence.isComplete;
       sentence.isComplete = userText === originalText;
       
-      // 如果句子刚刚完成（之前未完成，现在完成），则更新练习次数
-      if (sentence.isComplete) {
+      // 如果句子刚刚完成（之前未完成，现在完成），则播放成功音效并更新练习次数
+      if (sentence.isComplete && !wasComplete) {
+        this.playSuccessSound();
         await this.updateSentenceCount(sentence);
       }
     },
@@ -268,6 +270,17 @@ export default {
       for (let i = this.sentences.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [this.sentences[i], this.sentences[j]] = [this.sentences[j], this.sentences[i]];
+      }
+    },
+    
+    playSuccessSound() {
+      try {
+        const audio = new Audio('/sentence-app/success.mp3');
+        audio.play().catch(error => {
+          console.error('播放成功音效失败:', error);
+        });
+      } catch (error) {
+        console.error('创建音频对象失败:', error);
       }
     }
   }
