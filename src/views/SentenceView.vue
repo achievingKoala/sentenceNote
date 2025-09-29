@@ -12,7 +12,7 @@
       <div class="sentence-text-zh">{{ sentence.text_zh }}</div>
       <div 
         class="sentence-input" 
-        contenteditable="true"
+        :contenteditable="!sentence.isComplete"
         spellcheck="false"
         :data-placeholder="sentence.userInput ? '' : '输入英文句子...'"
         @input="updateInput($event, sentence)"
@@ -398,6 +398,12 @@ export default {
   min-height: 20px;
   white-space: pre-wrap;
   word-break: break-word;
+}
+
+.sentence-input[contenteditable="false"] {
+  background-color: #f8f9fa;
+  cursor: not-allowed;
+  opacity: 0.8;
 }
 
 .sentence-input:focus {
