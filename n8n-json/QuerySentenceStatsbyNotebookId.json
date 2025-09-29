@@ -1,5 +1,4 @@
 {
-  "name": "QuerySentenceStatsbyNotebookId",
   "nodes": [
     {
       "parameters": {
@@ -10,10 +9,10 @@
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2.1,
       "position": [
-        -448,
-        -96
+        0,
+        16
       ],
-      "id": "eb76a17c-d2d0-43c7-97b4-f77bf7ec78b3",
+      "id": "740861e7-6640-40a1-ad89-18d610d66cd4",
       "name": "Webhook",
       "webhookId": "cb1dd4a8-d6ea-4337-a84f-1c8d2e9c9130"
     },
@@ -26,10 +25,10 @@
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.4,
       "position": [
-        224,
-        -96
+        896,
+        -80
       ],
-      "id": "7b6ff666-45a0-4f56-9980-0b7a8b3bc2d5",
+      "id": "378406e2-3136-4606-ab2d-b4a9be6baa40",
       "name": "Respond to Webhook"
     },
     {
@@ -41,10 +40,10 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.6,
       "position": [
-        -224,
-        -96
+        224,
+        16
       ],
-      "id": "d6bf5006-1428-4a71-9ea6-028c78e103c9",
+      "id": "ba6af5ac-d595-4f09-b332-a84fed0e57bd",
       "name": "Query sentence stats",
       "alwaysOutputData": true,
       "credentials": {
@@ -62,11 +61,60 @@
       "type": "n8n-nodes-base.aggregate",
       "typeVersion": 1,
       "position": [
-        0,
-        -96
+        672,
+        -80
       ],
-      "id": "85641456-27a1-43d0-9b2d-595d9d9143a9",
+      "id": "8d53059c-fb56-4afc-bcb6-20195f7b4265",
       "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "d6e9ed51-cda6-49f9-96a9-058af161f2a3",
+              "leftValue": "={{ $json.id}}",
+              "rightValue": "",
+              "operator": {
+                "type": "number",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        448,
+        16
+      ],
+      "id": "2bf302a8-4f26-4c89-9c9d-a79f77783d4c",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "[]",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        672,
+        112
+      ],
+      "id": "4b4f3b2e-d559-4e85-837d-4d9dbefe9f58",
+      "name": "Empty array"
     }
   ],
   "connections": {
@@ -85,7 +133,7 @@
       "main": [
         [
           {
-            "node": "Aggregate",
+            "node": "If",
             "type": "main",
             "index": 0
           }
@@ -102,14 +150,57 @@
           }
         ]
       ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Empty array",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
-  "active": true,
-  "settings": {
-    "executionOrder": "v1"
+  "pinData": {
+    "Webhook": [
+      {
+        "headers": {
+          "host": "localhost:5678",
+          "connection": "keep-alive",
+          "sec-ch-ua-platform": "\"macOS\"",
+          "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36",
+          "sec-ch-ua": "\"Not;A=Brand\";v=\"99\", \"Google Chrome\";v=\"139\", \"Chromium\";v=\"139\"",
+          "sec-ch-ua-mobile": "?0",
+          "accept": "*/*",
+          "origin": "http://localhost:5173",
+          "sec-fetch-site": "same-site",
+          "sec-fetch-mode": "cors",
+          "sec-fetch-dest": "empty",
+          "referer": "http://localhost:5173/",
+          "accept-encoding": "gzip, deflate, br, zstd",
+          "accept-language": "zh-CN,zh;q=0.9,en;q=0.8",
+          "if-none-match": "W/\"4-TplQofIwX1bTWMrSPyggP7Oqy+8\""
+        },
+        "params": {},
+        "query": {
+          "notebookId": "52"
+        },
+        "body": {},
+        "webhookUrl": "http://localhost:5678/webhook/sentenceStatsByNotebookId",
+        "executionMode": "production"
+      }
+    ]
   },
   "meta": {
-    "templateCredsSetupCompleted": true
-  },
-  "tags": []
+    "instanceId": "9f057a285dff4c6be807be41c1ee6a8eef4774991a6e3b2db8f42d1b74dc96f0"
+  }
 }
