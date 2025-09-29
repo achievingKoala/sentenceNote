@@ -1,46 +1,61 @@
 {
-  "name": "Update Sentence Count",
   "nodes": [
     {
       "parameters": {
+        "httpMethod": "POST",
         "path": "addSentenceCount",
-        "httpMethod": "POST"
+        "responseMode": "responseNode",
+        "options": {}
       },
-      "id": "webhook-trigger",
+      "id": "d1fb3f94-db09-4f2b-9d54-c76c41fe114f",
       "name": "Webhook",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 1,
-      "position": [240, 300],
+      "position": [
+        576,
+        288
+      ],
       "webhookId": "addSentenceCount"
     },
     {
       "parameters": {
-        "operation": "executeQuery",
-        "query": "INSERT INTO public.sentence_counts(user_id, sentence_id, usage_count)\nVALUES ({{ $json.userId }}, {{ $json.sentenceId }}, 1)\nON CONFLICT (user_id, sentence_id) DO UPDATE\nSET usage_count = public.sentence_counts.usage_count + 1;",
+        "respondWith": "json",
+        "responseBody": "={{ $json}}",
         "options": {}
       },
-      "id": "postgres-node",
-      "name": "PostgreSQL",
-      "type": "n8n-nodes-base.postgres",
-      "typeVersion": 1,
-      "position": [460, 300],
-      "credentials": {
-        "postgres": {
-          "id": "your-postgres-credential-id",
-          "name": "PostgreSQL account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "respondWith": "json",
-        "responseBody": "{\"success\": true}"
-      },
-      "id": "respond-node",
+      "id": "5a184e6b-137e-48ac-9292-5d5371077eeb",
       "name": "Respond to Webhook",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1,
-      "position": [680, 300]
+      "position": [
+        1024,
+        288
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- +1 计数并把结果返回\nINSERT INTO public.sentence_counts (user_id, sentence_id, usage_count)\nVALUES ($1, $2, 1)\nON CONFLICT (user_id, sentence_id)\nDO UPDATE SET usage_count = public.sentence_counts.usage_count + 1\nRETURNING user_id, sentence_id, usage_count AS new_count;",
+        "options": {
+          "queryReplacement": "={{ $json.body.userId || 1 }}, {{ $json.body.sentenceId }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        800,
+        288
+      ],
+      "id": "27196040-2b02-418e-9eda-c32ea6b0d77d",
+      "name": "Execute a SQL query",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "1IelyHRtO1kOE0Tf",
+          "name": "Postgres account"
+        }
+      },
+      "onError": "continueRegularOutput"
     }
   ],
   "connections": {
@@ -48,14 +63,14 @@
       "main": [
         [
           {
-            "node": "PostgreSQL",
+            "node": "Execute a SQL query",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "PostgreSQL": {
+    "Execute a SQL query": {
       "main": [
         [
           {
@@ -67,9 +82,6 @@
       ]
     }
   },
-  "active": true,
-  "settings": {},
-  "versionId": "1",
   "pinData": {
     "Webhook": [
       {
@@ -85,5 +97,9 @@
         "executionMode": "test"
       }
     ]
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "9f057a285dff4c6be807be41c1ee6a8eef4774991a6e3b2db8f42d1b74dc96f0"
   }
 }

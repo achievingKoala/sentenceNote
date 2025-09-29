@@ -104,7 +104,22 @@
    "responseBody": "={{ { \"success\": true, \"liked\": false, \"message\": \"Unliked successfully\" } }}",
    发送请求时按钮要禁用
  - 展示完成次数： usage_count
- - 字体变大一点
+ - 完成次数修改接口：
+ post
+ - http://localhost:5678/webhook/addSentenceCount
+ request body {
+   sentenceId:
+   userId:
+ }
+ response body
+{
+    "user_id": 1,
+    "sentence_id": 36,
+    "new_count": 1
+}
+ - todo 空列表什么都不展示
+ - todo 中文可编辑
+ - todo 字体变大一点
  
 
 2 分页

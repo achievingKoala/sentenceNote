@@ -164,7 +164,7 @@ export default {
       }
     },
     
-    checkComplete(sentence) {
+    async checkComplete(sentence) {
       if (!sentence.userInput) {
         sentence.isComplete = false;
         return;
@@ -172,6 +172,32 @@ export default {
       const userText = sentence.userInput.toLowerCase().replace(/[^a-zA-Z\s]/g, '').replace(/\s+/g, ' ').trim();
       const originalText = sentence.text.toLowerCase().replace(/[^a-zA-Z\s]/g, '').replace(/\s+/g, ' ').trim();
       sentence.isComplete = userText === originalText;
+      
+      // 如果句子刚刚完成（之前未完成，现在完成），则更新练习次数
+      if (sentence.isComplete) {
+        await this.updateSentenceCount(sentence);
+      }
+    },
+    
+    async updateSentenceCount(sentence) {
+      try {
+        const response = await fetch('http://localhost:5678/webhook/addSentenceCount', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            sentenceId: sentence.id
+          })
+        });
+        
+        const result = await response.json();
+        if (result.new_count !== undefined) {
+          sentence.usage_count = result.new_count;
+        }
+      } catch (error) {
+        console.error('Update sentence count error:', error);
+      }
     },
     
     async speakSentence(text) {
