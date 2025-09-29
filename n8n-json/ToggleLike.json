@@ -46,41 +46,6 @@
     },
     {
       "parameters": {
-        "conditions": {
-          "options": {
-            "caseSensitive": true,
-            "leftValue": "",
-            "typeValidation": "strict",
-            "version": 1
-          },
-          "conditions": [
-            {
-              "leftValue": "={{ $json.id }}",
-              "rightValue": 0,
-              "operator": {
-                "type": "string",
-                "operation": "exists",
-                "singleValue": true
-              },
-              "id": "e2f4d5c9-a4d9-4f11-9b53-a5066391b1b9"
-            }
-          ],
-          "combinator": "and"
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 2,
-      "position": [
-        64,
-        384
-      ],
-      "id": "23045505-d3f0-44ea-898c-fdcc978237cf",
-      "name": "If Liked",
-      "alwaysOutputData": true
-    },
-    {
-      "parameters": {
         "operation": "deleteTable",
         "schema": {
           "__rl": true,
@@ -101,7 +66,7 @@
             },
             {
               "column": "user_id",
-              "value": "={{ $('Webhook1').item.json.body.user_id }}"
+              "value": "={{ $('Webhook1').item.json.body.user_id || 1}}"
             }
           ]
         },
@@ -240,6 +205,69 @@
       "id": "2c0def7d-60c2-4568-86f7-415973f029b0",
       "name": "Webhook1",
       "webhookId": "cb1dd4a8-d6ea-4337-a84f-1c8d2e9c9130"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.id }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "exists",
+                      "singleValue": true
+                    },
+                    "id": "13590ce1-caa2-41d7-8f87-7b3a98286906"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "b02e5116-bd99-4ddd-9746-73e025fb4232",
+                    "leftValue": "",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.3,
+      "position": [
+        64,
+        384
+      ],
+      "id": "ff3f11b0-1700-4343-a27f-1ef4f13c7e16",
+      "name": "Switch"
     }
   ],
   "connections": {
@@ -247,25 +275,7 @@
       "main": [
         [
           {
-            "node": "If Liked",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "If Liked": {
-      "main": [
-        [
-          {
-            "node": "Delete Like",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Insert Like",
+            "node": "Switch",
             "type": "main",
             "index": 0
           }
@@ -304,6 +314,24 @@
           }
         ]
       ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Delete Like",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Insert Like",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "pinData": {
@@ -315,8 +343,7 @@
         "params": {},
         "query": {},
         "body": {
-          "sentence_id": 44,
-          "user_id": 1
+          "sentence_id": 44
         },
         "webhookUrl": "http://localhost:5678/webhook/toggleLike",
         "executionMode": "test"
