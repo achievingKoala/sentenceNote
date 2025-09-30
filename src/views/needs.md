@@ -51,11 +51,11 @@
 
 4. 点击侧边栏时
    请求
-   http://localhost:5678/webhook/allSentencesByNoteBookId?notebookId={$notebook_id}
+   http://localhost:5678/webhook/sentenceStatsByNotebookId?notebookId={$notebook_id}
 
 5. 页面上处理请求响应
 
-- http://localhost:5678/webhook/allSentencesByNoteBookId?notebookId={$notebook_id}
+- http://localhost:5678/webhook/sentenceStatsByNotebookId?notebookId={$notebook_id}
 
 ````json
 [
@@ -123,7 +123,11 @@
  - todo 空格如何明显？
  
 
-2 分页
+2. SentenceView.vue 前端 分页
+默认10 条
+todo 仅显示收藏
+todo 根据练习次数正序，倒序
+todo 随机当前页面
 
 2 关键词显示
 3 实时提醒
