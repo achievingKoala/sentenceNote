@@ -109,11 +109,11 @@ export default {
       const caretOffset = preCaretRange.toString().length;
       
       // 获取句子中的单词
-      const sentenceWords = sentence.text.toLowerCase().split(/\W+/).filter(word => word.length > 0);
+      const sentenceWords = sentence.text.split(/\W+/).filter(word => word.length > 0);
       // console.log(sentenceWords)
       // 高亮匹配的单词
       const words = text.split(/(\s+)/).map(word => {
-        const cleanWord = word.trim().toLowerCase().replace(/[^a-zA-Z]/g, '');
+        const cleanWord = word.trim().replace(/[^a-zA-Z]/g, '');
         if (cleanWord && sentenceWords.includes(cleanWord)) {
           return `<span class="highlight">${word.replace(/ /g, '&nbsp;')}</span>`;
         }
@@ -169,8 +169,8 @@ export default {
         sentence.isComplete = false;
         return;
       }
-      const userText = sentence.userInput.toLowerCase().replace(/[^a-zA-Z\s]/g, '').replace(/\s+/g, ' ').trim();
-      const originalText = sentence.text.toLowerCase().replace(/[^a-zA-Z\s]/g, '').replace(/\s+/g, ' ').trim();
+      const userText = sentence.userInput.replace(/[^a-zA-Z\s]/g, '').replace(/\s+/g, ' ').trim();
+      const originalText = sentence.text.replace(/[^a-zA-Z\s]/g, '').replace(/\s+/g, ' ').trim();
       const wasComplete = sentence.isComplete;
       sentence.isComplete = userText === originalText;
       
