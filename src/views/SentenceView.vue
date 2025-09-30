@@ -172,9 +172,11 @@ export default {
       }
       
       //去两边空格
-      const userText = sentence.userInput.trim();
-      const originalText = sentence.text.trim();
+      const userText = sentence.userInput.replace(/\s/g, ' ').trim();
+      const originalText = sentence.text.replace(/\s/g, ' ').trim();
       const wasComplete = sentence.isComplete;
+      console.log(userText, originalText)
+      console.log(userText == originalText)
       sentence.isComplete = userText === originalText;
       
       // 如果句子刚刚完成（之前未完成，现在完成），则播放成功音效并更新练习次数
