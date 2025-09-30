@@ -325,7 +325,7 @@ export default {
 }
 
 .sentence-text {
-  font-size: 16px;
+  font-size: 25px;
   line-height: 1.6;
   color: #333;
   flex: 1;
@@ -405,7 +405,7 @@ export default {
   padding: 12px;
   border: 1px solid #ddd;
   border-radius: 4px;
-  font-size: 14px;
+  font-size: 25px;
   outline: none;
   transition: border-color 0.2s;
   min-height: 20px;
