@@ -23,11 +23,11 @@
       <div class="button-group">
         <button 
           class="btn speak-btn" 
-          @click="speakSentence(sentence.text)" 
-          :disabled="isSpeaking"
+          @click="speakSentence(sentence)" 
+          :disabled="sentence.isSpeaking"
           title="发声 (快捷键: \\)"
         >
-          {{ isSpeaking ? '播放中...' : '发声' }} (快捷键: \)
+          {{ sentence.isSpeaking ? '播放中...' : '发声' }} (快捷键: \)
         </button>
         <button 
           class="btn toggle-english-btn" 
@@ -76,7 +76,6 @@ export default {
   },
   data() {
     return {
-      isSpeaking: false,
       currentFocusedSentence: null,
       currentPage: 1,
       pageSize: 10
@@ -103,6 +102,7 @@ export default {
       }
       sentence.isComplete = false
       sentence.isLiking = false
+      sentence.isSpeaking = false
     })
     
     // 添加快捷键监听
@@ -228,18 +228,18 @@ export default {
       }
     },
     
-    async speakSentence(text) {
-      if (this.isSpeaking) return;
+    async speakSentence(sentence) {
+      if (sentence.isSpeaking) return;
       
-      this.isSpeaking = true;
+      sentence.isSpeaking = true;
       try {
-        await speakText(text);
+        await speakText(sentence.text);
       } catch (error) {
         console.error('Speech error:', error);
       } finally {
         // 延迟重置状态，防止音频播放完成前就重置
         setTimeout(() => {
-          this.isSpeaking = false;
+          sentence.isSpeaking = false;
         }, 1000);
       }
     },
@@ -250,7 +250,7 @@ export default {
         // 播放当前正在输入的句子，如果没有则播放第一个句子
         const targetSentence = this.currentFocusedSentence || (this.sentences.length > 0 ? this.sentences[0] : null);
         if (targetSentence) {
-          this.speakSentence(targetSentence.text);
+          this.speakSentence(targetSentence);
         }
       }
       
