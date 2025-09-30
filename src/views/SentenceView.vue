@@ -1,11 +1,12 @@
 <template>
   <div class="sentence-view">
     <div class="control-bar">
+      <span class="page-info"> 共 {{ sentences.length }} 条</span>
       <button class="btn random-btn" @click="shuffleSentences">
         随机展示
       </button>
     </div>
-    <div class="sentence-card" v-for="sentence in sentences" :key="sentence.id">
+    <div class="sentence-card" v-for="sentence in paginatedSentences" :key="sentence.id">
       <div class="sentence-header">
         <div class="sentence-text" v-show="sentence.showEnglish">{{ sentence.text }}</div>
       </div>
@@ -51,6 +52,14 @@
         ✓ 正确！
       </div>
     </div>
+    
+    <div class="pagination" v-if="totalPages > 1">
+      <button class="btn page-btn" @click="currentPage = 1" :disabled="currentPage === 1">首页</button>
+      <button class="btn page-btn" @click="currentPage--" :disabled="currentPage === 1">上一页</button>
+      <span class="page-info">{{ currentPage }} / {{ totalPages }}</span>
+      <button class="btn page-btn" @click="currentPage++" :disabled="currentPage === totalPages">下一页</button>
+      <button class="btn page-btn" @click="currentPage = totalPages" :disabled="currentPage === totalPages">末页</button>
+    </div>
   </div>
 </template>
 
@@ -68,7 +77,19 @@ export default {
   data() {
     return {
       isSpeaking: false,
-      currentFocusedSentence: null
+      currentFocusedSentence: null,
+      currentPage: 1,
+      pageSize: 10
+    }
+  },
+  computed: {
+    totalPages() {
+      return Math.ceil(this.sentences.length / this.pageSize)
+    },
+    paginatedSentences() {
+      const start = (this.currentPage - 1) * this.pageSize
+      const end = start + this.pageSize
+      return this.sentences.slice(start, end)
     }
   },
   mounted() {
@@ -443,5 +464,35 @@ export default {
   color: #28a745;
   font-weight: bold;
   font-size: 14px;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.page-btn {
+  background: #007bff;
+  padding: 8px 16px;
+}
+
+.page-btn:hover:not(:disabled) {
+  background-color: #0056b3;
+}
+
+.page-btn:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.page-info {
+  padding: 6px 12px;
+  font-size: 14px;
+  color: #333;
+  margin: 0 10px;
 }
 </style>
