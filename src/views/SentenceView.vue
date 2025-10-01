@@ -10,10 +10,10 @@
       </button>
     </div>
     <div class="sentence-card" v-for="sentence in paginatedSentences" :key="sentence.id">
+      <div class="sentence-text-zh">{{ sentence.text_zh }}</div>
       <div class="sentence-header">
         <div class="sentence-text" v-show="sentence.showEnglish">{{ sentence.text }}</div>
       </div>
-      <div class="sentence-text-zh">{{ sentence.text_zh }}</div>
       <div 
         class="sentence-input" 
         :contenteditable="!sentence.isComplete"
@@ -327,8 +327,9 @@ export default {
 <style>
 .sentence-view {
   padding: 20px;
-  max-width: 800px;
   margin: 0 auto;
+  max-width: 90%;
+  width: 100%;
 }
 
 .control-bar {
@@ -380,7 +381,7 @@ export default {
 }
 
 .sentence-text {
-  font-size: 25px;
+  font-size: 30px;
   line-height: 1.6;
   color: #333;
   flex: 1;
@@ -442,7 +443,7 @@ export default {
 }
 
 .sentence-text-zh {
-  font-size: 14px;
+  font-size: 20px;
   line-height: 1.5;
   color: #666;
   font-style: italic;
@@ -460,7 +461,7 @@ export default {
   padding: 12px;
   border: 1px solid #ddd;
   border-radius: 4px;
-  font-size: 25px;
+  font-size: 30px;
   outline: none;
   transition: border-color 0.2s;
   min-height: 20px;
