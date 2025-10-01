@@ -131,7 +131,6 @@ export default {
       
       // 获取句子中的单词
       const sentenceWords = sentence.text.split(/\s+/).filter(word => word.length > 0);
-      // console.log(sentenceWords)
       // 高亮匹配的单词
       const words = text.split(/(\s+)/).map(word => {
         const cleanWord = word.trim();
@@ -196,8 +195,6 @@ export default {
       const userText = sentence.userInput.replace(/\s/g, ' ').trim();
       const originalText = sentence.text.replace(/\s/g, ' ').trim();
       const wasComplete = sentence.isComplete;
-      console.log(userText, originalText)
-      console.log(userText == originalText)
       sentence.isComplete = userText === originalText;
       
       // 如果句子刚刚完成（之前未完成，现在完成），则播放成功音效并更新练习次数
