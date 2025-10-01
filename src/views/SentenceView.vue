@@ -1,7 +1,10 @@
 <template>
   <div class="sentence-view">
     <div class="control-bar">
-      <span class="page-info"> 共 {{ sentences.length }} 条</span>
+      <span class="page-info"> 共 {{ filteredSentences.length }} 条</span>
+      <button class="btn favorites-btn" @click="toggleFavoritesOnly" :class="{ active: showFavoritesOnly }">
+        {{ showFavoritesOnly ? '显示全部' : '仅显示收藏' }}
+      </button>
       <button class="btn random-btn" @click="shuffleSentences">
         随机展示
       </button>
@@ -78,17 +81,23 @@ export default {
     return {
       currentFocusedSentence: null,
       currentPage: 1,
-      pageSize: 10
+      pageSize: 5,
+      showFavoritesOnly: false
     }
   },
   computed: {
+    filteredSentences() {
+      return this.showFavoritesOnly 
+        ? this.sentences.filter(sentence => sentence.is_liked)
+        : this.sentences
+    },
     totalPages() {
-      return Math.ceil(this.sentences.length / this.pageSize)
+      return Math.ceil(this.filteredSentences.length / this.pageSize)
     },
     paginatedSentences() {
       const start = (this.currentPage - 1) * this.pageSize
       const end = start + this.pageSize
-      return this.sentences.slice(start, end)
+      return this.filteredSentences.slice(start, end)
     }
   },
   mounted() {
@@ -296,6 +305,11 @@ export default {
       }
     },
     
+    toggleFavoritesOnly() {
+      this.showFavoritesOnly = !this.showFavoritesOnly
+      this.currentPage = 1
+    },
+    
     playSuccessSound() {
       try {
         const audio = new Audio('/sentence-app/success.mp3');
@@ -320,6 +334,8 @@ export default {
 .control-bar {
   display: flex;
   justify-content: center;
+  align-items: center;
+  gap: 10px;
   margin-bottom: 20px;
 }
 
@@ -329,6 +345,22 @@ export default {
 
 .random-btn:hover {
   background-color: #5a32a3;
+}
+
+.favorites-btn {
+  background: #17a2b8;
+}
+
+.favorites-btn:hover {
+  background-color: #138496;
+}
+
+.favorites-btn.active {
+  background: #09e53cd1;
+}
+
+.favorites-btn.active:hover {
+  background-color: #4d9b16;
 }
 
 .sentence-card {
