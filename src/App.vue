@@ -17,7 +17,7 @@
     </div>
     <div class="main-content">
       <AddPage v-if="currentView === 'AddPage'" />
-      <SentenceView v-else :sentences="currentSentences" />
+      <SentenceView v-else :sentences="currentSentences" :key="currentView" />
     </div>
   </div>
 </template>
