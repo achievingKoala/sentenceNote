@@ -314,6 +314,7 @@ export default {
     },
     
     shuffleSentences() {
+      this.sortOrder = 'none';
       for (let i = this.sentences.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [this.sentences[i], this.sentences[j]] = [this.sentences[j], this.sentences[i]];
