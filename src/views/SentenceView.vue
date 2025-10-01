@@ -5,6 +5,12 @@
       <button class="btn favorites-btn" @click="toggleFavoritesOnly" :class="{ active: showFavoritesOnly }">
         {{ showFavoritesOnly ? '显示全部' : '仅显示收藏' }}
       </button>
+      <button class="btn sort-btn" @click="sortAsc" :class="{ active: sortOrder === 'asc' }">
+        次数正序 ↓
+      </button>
+      <button class="btn sort-btn" @click="sortDesc" :class="{ active: sortOrder === 'desc' }">
+        次数倒序 ↑
+      </button>
       <button class="btn random-btn" @click="shuffleSentences">
         随机展示
       </button>
@@ -82,14 +88,23 @@ export default {
       currentFocusedSentence: null,
       currentPage: 1,
       pageSize: 5,
-      showFavoritesOnly: false
+      showFavoritesOnly: false,
+      sortOrder: 'none' // 'none', 'asc', 'desc'
     }
   },
   computed: {
     filteredSentences() {
-      return this.showFavoritesOnly 
+      let filtered = this.showFavoritesOnly 
         ? this.sentences.filter(sentence => sentence.is_liked)
         : this.sentences
+      
+      if (this.sortOrder === 'asc') {
+        filtered = [...filtered].sort((a, b) => a.usage_count - b.usage_count)
+      } else if (this.sortOrder === 'desc') {
+        filtered = [...filtered].sort((a, b) => b.usage_count - a.usage_count)
+      }
+      
+      return filtered
     },
     totalPages() {
       return Math.ceil(this.filteredSentences.length / this.pageSize)
@@ -310,6 +325,16 @@ export default {
       this.currentPage = 1
     },
     
+    sortAsc() {
+      this.sortOrder = this.sortOrder === 'asc' ? 'none' : 'asc'
+      this.currentPage = 1
+    },
+    
+    sortDesc() {
+      this.sortOrder = this.sortOrder === 'desc' ? 'none' : 'desc'
+      this.currentPage = 1
+    },
+    
     playSuccessSound() {
       try {
         const audio = new Audio('/sentence-app/success.mp3');
@@ -362,6 +387,22 @@ export default {
 
 .favorites-btn.active:hover {
   background-color: #4d9b16;
+}
+
+.sort-btn {
+  background: #3308ce;
+}
+
+.sort-btn:hover {
+  background-color: #e8590c;
+}
+
+.sort-btn.active {
+  background: #08da21;
+}
+
+.sort-btn.active:hover {
+  background-color: #c82333;
 }
 
 .sentence-card {
