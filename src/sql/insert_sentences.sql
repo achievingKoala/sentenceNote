@@ -1,11 +1,3 @@
-create table public.sentences (
-  id serial not null,
-  text text not null,
-  text_zh text null,
-  notebook_id integer null,
-  constraint sentences_pkey primary key (id)
-) TABLESPACE pg_default;
-
 insert into public.sentences (text, text_zh, notebook_id) values ('The person you are the most afraid to contradict is yourself.', '你最害怕反驳的人，是你自己。', 22);
 insert into public.sentences (text, text_zh, notebook_id) values ('An idea starts to be interesting when you get scared of taking it to its logical conclusion.', '当一个想法令你害怕将其推向逻辑的终点时，它才开始变得有趣。', 22);
 insert into public.sentences (text, text_zh, notebook_id) values ('Pharmaceutical companies are better at inventing diseases that match existing drugs, rather than inventing drugs to match existing diseases.', '制药公司更擅长发明与现有药物相匹配的疾病，而不是发明与现有疾病相匹配的药物。', 22);
