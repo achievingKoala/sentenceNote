@@ -8,6 +8,6 @@ INSERT INTO public.sentences (text, text_zh, notebook_id) VALUES
 ('Many are so unoriginal they study history to find mistakes to repeat.', '许多人如此缺乏原创性，以至于他们研究历史是为了找到要重复的错误。', 30),
 ('There is nothing deemed harmful (in general) that cannot be beneficial in some particular instances, and nothing deemed beneficial that cannot harm you in some circumstances.', '没有什么被认为（总体上）有害的东西在某些特定情况下不能有益，也没有什么被认为有益的东西在某些情况下不能伤害你。', 30),
 ('The more complex the system, the weaker the notion of Universal.', '系统越复杂，普遍性的概念就越弱。', 30),
-('The fool generalizes the particular; the nerd particularizes the general; some do both; and the wise does neither.', '愚者将特殊普遍化；书呆子将普遍特殊化；有些人两者都做；而智者两者都不做。', 30),
-('You want to be yourself, idiosyncratic; the collective (school, rules, jobs, technology) wants you generic to the point of castration.', '你想做自己，与众不同；集体（学校、规则、工作、技术）希望你普通到被阉割的程度。', 30),
-('True love is the complete victory of the particular over the general, and the unconditional over the conditional.', '真爱是特殊对普遍的完全胜利，是无条件对有条件的胜利。', 30);
+('The fool generalizes the particular; the nerd particularizes the general; some do both; and the wise does neither.', '愚者将特殊普遍化；书呆子将普遍特殊化；有些人两者都做；而智者两者都不做。', 30);
+-- ('You want to be yourself, idiosyncratic; the collective (school, rules, jobs, technology) wants you generic to the point of castration.', '你想做自己，与众不同；集体（学校、规则、工作、技术）希望你普通到被阉割的程度。', 30),
+-- ('True love is the complete victory of the particular over the general, and the unconditional over the conditional.', '真爱是特殊对普遍的完全胜利，是无条件对有条件的胜利。', 30);
