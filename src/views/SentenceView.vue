@@ -74,6 +74,7 @@
 
 <script>
 import { speakText } from './AzureTextToSpeech.js'
+import { API_BASE_URL } from '../config.js'
 
 export default {
   name: 'SentenceView',
@@ -230,7 +231,7 @@ export default {
     
     async updateSentenceCount(sentence) {
       try {
-        const response = await fetch('http://localhost:5678/webhook/addSentenceCount', {
+        const response = await fetch(`${API_BASE_URL}/webhook/addSentenceCount`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
@@ -292,7 +293,7 @@ export default {
       
       sentence.isLiking = true;
       try {
-        const response = await fetch('http://localhost:5678/webhook/toggleLike', {
+        const response = await fetch(`${API_BASE_URL}/webhook/toggleLike`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'

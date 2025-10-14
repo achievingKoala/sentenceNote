@@ -21,6 +21,8 @@
 </template>
 
 <script>
+import { API_BASE_URL } from '../config.js'
+
 export default {
   name: 'AddPage',
   data() {
@@ -41,7 +43,7 @@ export default {
   methods: {
     async fetchNotebooks() {
       try {
-        const response = await fetch('http://localhost:5678/webhook/notebooks')
+        const response = await fetch(`${API_BASE_URL}/webhook/notebooks`)
         this.notebooks = await response.json()
         const firstNotebook = this.notebooks.find(nb => nb.name === 'first')
         if (firstNotebook) {
@@ -61,7 +63,7 @@ export default {
       }
       
       try {
-        const response = await fetch('http://localhost:5678/webhook/createSentence', {
+        const response = await fetch(`${API_BASE_URL}/webhook/createSentence`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'

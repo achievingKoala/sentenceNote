@@ -25,6 +25,7 @@
 <script>
 import AddPage from './views/AddPage.vue'
 import SentenceView from './views/SentenceView.vue'
+import { API_BASE_URL } from './config.js'
 
 export default {
   name: 'App',
@@ -45,7 +46,7 @@ export default {
   methods: {
     async fetchNotebooks() {
       try {
-        const response = await fetch('http://localhost:5678/webhook/notebooks')
+        const response = await fetch(`${API_BASE_URL}/webhook/notebooks`)
         this.notebooks = await response.json()
       } catch (error) {
         console.error('获取笔记本列表失败:', error)
@@ -54,7 +55,7 @@ export default {
     async selectNotebook(notebookId) {
       this.currentView = `notebook-${notebookId}`
       try {
-        const response = await fetch(`http://localhost:5678/webhook/sentenceStatsByNotebookId?notebookId=${notebookId}`)
+        const response = await fetch(`${API_BASE_URL}/webhook/sentenceStatsByNotebookId?notebookId=${notebookId}`)
         this.currentSentences = await response.json()
       } catch (error) {
         console.error('获取句子失败:', error)
