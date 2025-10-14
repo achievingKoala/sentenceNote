@@ -55,6 +55,7 @@
  - play sound 发声按钮 利用 AzureTextToSpeech.js 显示文字:播放中... 快捷键 \ 防止反复按键
  - 隐藏/显示英文按钮 快捷键 ：= 
  - 随机展示
+ - todo 随机后收藏禁用取消
  - 展示 添加收藏/取消收藏 按钮 （is_liked）
  ```
  {
@@ -102,11 +103,19 @@
  - todo 空格如何明显？
  
 
-2. SentenceView.vue 前端 分页
-默认10 条
-todo 仅显示收藏
-todo 根据练习次数正序，倒序
-todo 随机当前页面
+2. SentenceView.vue 
+- 前端 分页 默认 5 条
+- todo-done 翻页时页码重置
+```
+<SentenceView v-else :sentences="currentSentences" :key="currentView" />
+```
+- todo-done 仅显示收藏 按钮
+- todo-done 根据练习次数正序，倒序
+- todo 随机当前页面
+todo-done 侧边栏变宽
+- todo 颜色风格统一
+- todo queryAll
+
 
 2 关键词显示
 3 实时提醒
