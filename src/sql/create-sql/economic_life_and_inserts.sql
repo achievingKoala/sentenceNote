@@ -1,0 +1,28 @@
+-- INSERT statements for "Economic Life And Other Very Vulgar Subjects" with notebookId = 39
+
+INSERT INTO public.sentences (text, text_zh, notebook_id) VALUES 
+('There are designations, like "economist," "prostitute," or "consultant," for which additional characterization doesn''t add information.', '有些称谓，比如“经济学家”“妓女”或“顾问”，再加任何额外描述都不会增加信息量。', 39),
+('A mathematician starts with a problem and creates a solution; a consultant starts by offering a "solution" and creates a problem.', '数学家从问题出发并创造解决方案；顾问先端出一个“解决方案”，然后制造问题。', 39),
+('What they call "risk" I call opportunity; but what they call "low risk" opportunity I call sucker problem.', '他们所谓的“风险”，我称之为机会；但他们所谓“低风险”的机会，我称之为冤大头的问题。', 39),
+('Organizations are like caffeinated dupes unknowingly jogging backward; you only hear of the few who reach their destination.', '组织就像被咖啡因催动而不自知地向后慢跑的傻子；你只听说极少数抵达终点的。', 39),
+('The best test of whether someone is extremely stupid (or extremely wise) is whether financial and political news makes sense to him.', '判断一个人是否极其愚蠢（或极其智慧）的最佳测试，是看他是否觉得金融和政治新闻“有道理”。', 39),
+('The left holds that because markets are stupid models should be smart; the right believes that because models are stupid markets should be smart. Alas, it never hit both sides that both markets and models are very stupid.', '左派认为市场愚蠢，所以模型应该聪明；右派认为模型愚蠢，所以市场应该聪明。可惜两边都没意识到：市场和模型都很愚蠢。', 39),
+('Economics is like a dead star that still seems to produce light; but you know it is dead.', '经济学像一颗已经死亡却似乎仍在发光的恒星；但你知道它已经死了。', 39),
+('Suckers think that you cure greed with money, addiction with substances, expert problems with experts, banking with bankers, economics with economists, and debt crises with debt spending.', '傻瓜以为可以用金钱治愈贪婪、用物质治愈成瘾、用专家解决专家的问题、让银行家治银行、让经济学家治经济、用负债来治债务危机。', 39),
+('You can be certain that the head of a corporation has a lot to worry about when he announces publicly that "there is nothing to worry about."', '当一家公司的负责人公开宣布“没什么可担心的”时，你就可以肯定他有很多要担心的。', 39),
+('The stock market, in brief: participants are calmly waiting in line to be slaughtered while thinking it is for a Broadway show.', '简而言之，股市就是：参与者心平气和地排队等着被宰，还以为是在看百老汇演出。', 39),
+('The main di:erence between government bailouts and smoking is that in some rare cases the statement "this is my last cigarette" holds true.', '政府救助与吸烟的主要区别在于：在极少数情况下，“这是我最后一支烟”这句话可能是真的。', 39),
+('What makes us fragile is that institutions cannot have the same virtues (honor, truthfulness, courage, loyalty, tenacity) as individuals.', '让我们变得脆弱的是：制度无法像个体那样具备相同的美德（荣誉、诚实、勇气、忠诚、韧性）。', 39),
+('The worst damage has been caused by competent people trying to do good; the best improvements have been brought by incompetent ones not trying to do good.', '最糟的破坏往往来自那些有能力却试图行善的人；最好的改进则常由那些无能却不试图行善的人带来。', 39),
+('The difference between banks and the Mafia: banks have better legalregulatory expertise, but the Mafia understands public opinion.', '银行与黑手党的区别：银行更擅长法律与监管；黑手党更懂公众舆论。', 39),
+('"It is much easier to scam people for billions than for just millions."', '“骗到几十亿比骗到几百万容易得多。”', 39),
+('At a panel in Moscow, I watched the economist Edmund Phelps, who got the "Nobel" for writings no one reads, theories no one uses, and lectures no one understands.', '在莫斯科的一场论坛上，我见到经济学家埃德蒙·费尔普斯，他因无人阅读的文章、无人使用的理论以及无人听懂的演讲而获得了“诺奖”。', 39),
+('One of the failures of "scienti>c approximation" in the nonlinear domain comes from the inconvenient fact that the average of expectations is different from the expectation of averages.', '在非线性领域，“科学近似”的失败之一源于一个尴尬事实：期望的平均值与平均值的期望并不相同。', 39),
+('Journalists as reverse aphorists: my statement "you need skills to get a BMW, skills plus luck to become a Warren Bu:ett" was summarized as "Taleb says Buffett has no skills."', '记者像反向箴言家：我说“得到一辆宝马需要技能，成为巴菲特需要技能加运气”，他们总结成“塔勒布说巴菲特没有技能”。', 39),
+('The curious mind embraces science; the gifted and sensitive, the arts; the practical, business; the leftover becomes an economist.', '好奇者拥抱科学；天赋敏感者拥抱艺术；务实者从商；剩下的人成为经济学家。', 39),
+('Public companies, like human cells, are programmed for apoptosis, suicide through debt and hidden risks. Bailouts invest the process with a historical dimension.', '上市公司如同人体细胞，被编程走向“凋亡”：通过债务和隐性风险自我毁灭；救助只是让这一过程带上历史的维度。', 39),
+('In poor countries, o?cials receive explicit bribes; in D.C. they get the sophisticated implicit, unspoken promise to work for large corporations.', '在贫穷国家，官员收的是明码标价的贿赂；在华盛顿，他们得到的是更复杂的、隐性的、无声的承诺：日后去大公司任职。', 39),
+('Fate is at its cruelest when a banker ends up in poverty.', '当一个银行家最终陷入贫困时，命运显得最为残酷。', 39),
+('We should make students recompute their GPAs by counting their grades in finance and economics backward.', '我们应该让学生把金融与经济学课程的成绩倒着算来重新计算GPA。', 39),
+('The agency problem drives every company, thanks to the buildup of hidden risks, to maximal fragility.', '由于隐性风险的堆积，委托代理问题会把每家公司都推向最大的脆弱性。', 39),
+('In politics we face the choice between warmongering, nationstateloving, bigbusiness agents on one hand; and riskblind, topdown, epistemic arrogant big servants of large employers on the other. But we have a choice.', '在政治上，我们要在一边好战、崇尚民族国家、服务大企业的代理人，和另一边对风险盲目、自上而下、认识论傲慢、服务大雇主的大仆人之间做选择。但我们确实还有选择。', 39);
