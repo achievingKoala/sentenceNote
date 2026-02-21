@@ -339,7 +339,7 @@ export default {
     
     playSuccessSound() {
       try {
-        const audio = new Audio('/sentence-app/success.mp3');
+        const audio = new Audio('/success.mp3');
         audio.play().catch(error => {
           console.error('播放成功音效失败:', error);
         });
