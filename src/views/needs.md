@@ -26,6 +26,9 @@
 ### 4. 点击侧边栏时
 请求 http://localhost:5678/webhook/sentenceStatsByNotebookId?notebookId={$notebook_id}
 
+新功能： notebook_id 为-1 时后端会返回全部句子
+
+
 - 页面上处理请求响应数据
 ````json
 [
