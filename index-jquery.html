@@ -136,7 +136,7 @@
 
         async function fetchNotebooks() {
             try {
-                const response = await fetch(`${API_BASE_URL}/webhook/notebooks`);
+                const response = await fetch(`${API_BASE_URL}/notebooks`);
                 notebooks = await response.json();
                 
                 // 填充侧边栏
@@ -179,7 +179,7 @@
         async function selectNotebook(notebookId) {
             showSentenceView();
             try {
-                const response = await fetch(`${API_BASE_URL}/webhook/sentenceStatsByNotebookId?notebookId=${notebookId}`);
+                const response = await fetch(`${API_BASE_URL}/sentenceStatsByNotebookId?notebookId=${notebookId}`);
                 currentSentences = await response.json();
                 
                 // 初始化句子属性
@@ -238,7 +238,7 @@
             }
 
             try {
-                const response = await fetch(`${API_BASE_URL}/webhook/createSentence`, {
+                const response = await fetch(`${API_BASE_URL}/createSentence`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -444,7 +444,7 @@
 
         async function updateSentenceCount(sentence) {
             try {
-                const response = await fetch(`${API_BASE_URL}/webhook/addSentenceCount`, {
+                const response = await fetch(`${API_BASE_URL}/addSentenceCount`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ sentenceId: sentence.id })
@@ -537,7 +537,7 @@
             btn.prop('disabled', true).text('处理中...');
             
             try {
-                const response = await fetch(`${API_BASE_URL}/webhook/toggleLike`, {
+                const response = await fetch(`${API_BASE_URL}/toggleLike`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ sentence_id: sentence.id })
