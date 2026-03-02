@@ -4,6 +4,10 @@
       <div class="menu-item" :class="{ active: currentView === 'AddPage' }" @click="currentView = 'AddPage'">
         添加页面
       </div>
+      <div class="menu-item" :class="{ active: currentView === 'notebook--1' }" @click="selectNotebook(-1)">
+        <div class="notebook-title">全部句子</div>
+        <div class="notebook-subtitle">All Sentences</div>
+      </div>
       <div 
         v-for="notebook in notebooks" 
         :key="notebook.id" 
