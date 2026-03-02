@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>英语句子学习应用</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <style>
+        .highlight { background-color: #22c55e; color: white; }
+        .correct-indicator { animation: flash 0.5s; }
+        @keyframes flash { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        [contenteditable]:focus { outline: 2px solid #3b82f6; }
+        .space-char { background-color: #e5e7eb; width: 8px; height: 20px; display: inline-block; margin: 0 1px; }
+    </style>
+</head>
+<body class="bg-gray-50 h-screen flex">
+    <!-- 侧边栏 -->
+    <div class="w-80 bg-white shadow-lg">
+        <div class="p-6 border-b">
+            <h1 class="text-2xl font-bold text-gray-800">句子笔记</h1>
+        </div>
+        <div class="p-4">
+            <button id="addBtn" class="w-full bg-blue-600 text-white py-3 px-4 rounded-lg mb-4 hover:bg-blue-700 font-medium">添加句子</button>
+            <div id="notebooks"></div>
+        </div>
+    </div>
+
+    <!-- 主内容区 -->
+    <div class="flex-1 flex flex-col">
+        <!-- 添加句子页面 -->
+        <div id="addPage" class="flex-1 flex items-center justify-center">
+            <div class="w-full max-w-2xl p-8">
+                <div class="bg-white rounded-xl shadow-lg p-8">
+                    <h2 class="text-3xl font-bold text-center mb-8 text-gray-800">添加新句子</h2>
+                    <div class="space-y-6">
+                        <div>
+                            <label class="block text-lg font-medium mb-3 text-gray-700">英文句子</label>
+                            <textarea id="englishInput" class="w-full p-4 border-2 rounded-lg text-lg" rows="4" placeholder="输入英文句子..."></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-lg font-medium mb-3 text-gray-700">中文翻译</label>
+                            <div class="relative">
+                                <textarea id="chineseInput" class="w-full p-4 border-2 rounded-lg text-lg" rows="4" placeholder="中文翻译（自动生成）..."></textarea>
+                                <div id="translateLoading" class="hidden absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center rounded-lg">
+                                    <div class="flex items-center space-x-2">
+                                        <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+                                        <span class="text-blue-600">翻译中...</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-lg font-medium mb-3 text-gray-700">笔记本</label>
+                            <select id="notebookSelect" class="w-full p-4 border-2 rounded-lg text-lg">
+                                <option value="">选择笔记本</option>
+                            </select>
+                        </div>
+                        <div class="text-center pt-4">
+                            <button id="saveBtn" class="bg-green-600 text-white py-4 px-12 rounded-lg hover:bg-green-700 text-lg font-medium">保存</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 句子练习页面 -->
+        <div id="practicePage" class="hidden flex-1 flex flex-col">
+            <!-- 工具栏 -->
+            <div class="bg-white shadow-sm p-4 border-b">
+                <div class="flex justify-between items-center">
+                    <div class="flex gap-3">
+                        <button id="sortAsc" class="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300">练习次数升序</button>
+                        <button id="sortDesc" class="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300">练习次数降序</button>
+                        <button id="shuffle" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">随机</button>
+                        <button id="favoritesOnly" class="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300">仅收藏</button>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <span id="sentenceCount" class="text-sm text-gray-600">共 0 句</span>
+                        <div class="flex gap-2">
+                            <button id="prevPage" class="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">上一页</button>
+                            <span id="pageInfo" class="px-3 py-1">1/1</span>
+                            <button id="nextPage" class="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">下一页</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 句子列表 -->
+            <div class="flex-1 overflow-y-auto p-6">
+                <div id="sentenceList" class="space-y-6"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 全局状态
+        let state = {
+            notebooks: [],
+            sentences: [],
+            currentNotebook: -1,
+            currentPage: 1,
+            pageSize: 5,
+            sortOrder: 'asc',
+            showFavoritesOnly: false,
+            currentFocusedSentence: null,
+            isShuffled: false
+        };
+
+        // 初始化
+        $(document).ready(function() {
+            loadNotebooks();
+            bindEvents();
+        });
+
+        // 加载笔记本列表
+        async function loadNotebooks() {
+            try {
+                const response = await fetch('http://localhost:5678/notebooks');
+                const notebooks = await response.json();
+                state.notebooks = notebooks;
+                renderNotebooks();
+                loadSentences(-1); // 默认加载全部句子
+            } catch (error) {
+                console.error('加载笔记本失败:', error);
+            }
+        }
+
+        // 渲染笔记本列表
+        function renderNotebooks() {
+            const $notebooks = $('#notebooks');
+            $notebooks.empty();
+            
+            // 添加"全部句子"选项
+            $notebooks.append(`
+                <div class="notebook-item p-3 cursor-pointer hover:bg-blue-50 rounded-lg mb-2 bg-blue-100" data-id="-1">
+                    <div class="font-medium text-gray-800">全部句子</div>
+                </div>
+            `);
+            
+            state.notebooks.forEach(notebook => {
+                $notebooks.append(`
+                    <div class="notebook-item p-3 cursor-pointer hover:bg-blue-50 rounded-lg mb-2" data-id="${notebook.id}">
+                        <div class="font-medium text-gray-800">${notebook.name_zh}</div>
+                        <div class="text-sm text-gray-500">${notebook.name}</div>
+                    </div>
+                `);
+            });
+
+            // 更新选择器
+            const $select = $('#notebookSelect');
+            $select.empty().append('<option value="">选择笔记本</option>');
+            state.notebooks.forEach(notebook => {
+                $select.append(`<option value="${notebook.id}">${notebook.name_zh}</option>`);
+            });
+        }
+
+        // 加载句子列表
+        async function loadSentences(notebookId) {
+            try {
+                const response = await fetch(`http://localhost:5678/sentenceStatsByNotebookId?notebookId=${notebookId}`);
+                const sentences = await response.json();
+                state.sentences = sentences.map(s => ({
+                    ...s,
+                    userInput: '',
+                    showEnglish: false,
+                    isComplete: false
+                }));
+                state.currentNotebook = notebookId;
+                state.currentPage = 1;
+                state.isShuffled = false;
+                renderSentences();
+            } catch (error) {
+                console.error('加载句子失败:', error);
+            }
+        }
+
+        // 获取过滤后的句子
+        function getFilteredSentences() {
+            let filtered = [...state.sentences];
+            
+            if (state.showFavoritesOnly) {
+                filtered = filtered.filter(s => s.is_liked);
+            }
+            
+            // 排序
+            if (!state.isShuffled) {
+                filtered.sort((a, b) => {
+                    const order = state.sortOrder === 'asc' ? 1 : -1;
+                    return (a.usage_count - b.usage_count) * order;
+                });
+            }
+            
+            return filtered;
+        }
+
+        // 渲染句子列表
+        function renderSentences() {
+            const filtered = getFilteredSentences();
+            const totalPages = Math.ceil(filtered.length / state.pageSize);
+            const start = (state.currentPage - 1) * state.pageSize;
+            const paged = filtered.slice(start, start + state.pageSize);
+            
+            const $list = $('#sentenceList');
+            $list.empty();
+            
+            if (paged.length === 0) {
+                return; // 空列表什么都不展示
+            }
+            
+            paged.forEach(sentence => {
+                const $item = $(`
+                    <div class="bg-white rounded-xl shadow-lg p-6 sentence-item" data-id="${sentence.id}">
+                        <div class="mb-4">
+                            <div class="text-xl text-gray-800 mb-3" contenteditable="true">${sentence.text_zh}</div>
+                            <div class="english-text ${sentence.showEnglish ? '' : 'hidden'} text-blue-600 mb-3 text-lg">${sentence.text}</div>
+                        </div>
+                        <div class="mb-4">
+                            <div contenteditable="true" 
+                                 class="input-field w-full p-4 border-2 rounded-lg min-h-[60px] text-lg focus:outline-none focus:border-blue-500" 
+                                 data-sentence-id="${sentence.id}"
+                                 data-target="${sentence.text}"
+                                 placeholder="在此输入英文句子..."></div>
+                            <div class="correct-indicator hidden mt-2 text-green-600 text-lg font-medium">✓ 正确！</div>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <div class="flex gap-3">
+                                <button class="speak-btn px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700" data-text="${sentence.text}">🔊 播放</button>
+                                <button class="toggle-english px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600" data-sentence-id="${sentence.id}">
+                                    ${sentence.showEnglish ? '隐藏英文' : '显示英文'}
+                                </button>
+                                <button class="like-btn px-4 py-2 ${sentence.is_liked ? 'bg-red-500 hover:bg-red-600' : 'bg-gray-300 hover:bg-gray-400'} text-white rounded-lg" data-sentence-id="${sentence.id}">
+                                    ${sentence.is_liked ? '❤️ 已收藏' : '🤍 收藏'}
+                                </button>
+                            </div>
+                            <div class="text-gray-500">练习次数: ${sentence.usage_count}</div>
+                        </div>
+                    </div>
+                `);
+                $list.append($item);
+            });
+            
+            // 更新计数和分页信息
+            $('#sentenceCount').text(`共 ${filtered.length} 句`);
+            $('#pageInfo').text(`${state.currentPage}/${totalPages || 1}`);
+            
+            // 更新分页按钮状态
+            $('#prevPage').prop('disabled', state.currentPage <= 1);
+            $('#nextPage').prop('disabled', state.currentPage >= totalPages);
+        }
+
+        // 绑定事件
+        function bindEvents() {
+            // 笔记本选择
+            $(document).on('click', '.notebook-item', function() {
+                $('.notebook-item').removeClass('bg-blue-100');
+                $(this).addClass('bg-blue-100');
+                const notebookId = $(this).data('id');
+                loadSentences(notebookId);
+                $('#addPage').hide();
+                $('#practicePage').show();
+            });
+
+            // 页面切换
+            $('#addBtn').click(() => {
+                $('#practicePage').hide();
+                $('#addPage').show();
+            });
+
+            // 排序和筛选
+            $('#sortAsc').click(() => {
+                state.sortOrder = 'asc';
+                state.isShuffled = false;
+                renderSentences();
+            });
+
+            $('#sortDesc').click(() => {
+                state.sortOrder = 'desc';
+                state.isShuffled = false;
+                renderSentences();
+            });
+
+            $('#shuffle').click(() => {
+                // Fisher-Yates 洗牌算法
+                for (let i = state.sentences.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [state.sentences[i], state.sentences[j]] = [state.sentences[j], state.sentences[i]];
+                }
+                state.isShuffled = true;
+                renderSentences();
+            });
+
+            $('#favoritesOnly').click(function() {
+                state.showFavoritesOnly = !state.showFavoritesOnly;
+                $(this).toggleClass('bg-red-500 text-white', state.showFavoritesOnly);
+                state.currentPage = 1;
+                renderSentences();
+            });
+
+            // 分页
+            $('#prevPage').click(() => {
+                if (state.currentPage > 1) {
+                    state.currentPage--;
+                    renderSentences();
+                }
+            });
+
+            $('#nextPage').click(() => {
+                const filtered = getFilteredSentences();
+                const totalPages = Math.ceil(filtered.length / state.pageSize);
+                if (state.currentPage < totalPages) {
+                    state.currentPage++;
+                    renderSentences();
+                }
+            });
+
+            // 输入检测
+            $(document).on('input', '.input-field', function() {
+                const $this = $(this);
+                const sentenceId = $this.data('sentence-id');
+                const target = $this.data('target');
+                const input = $this.text();
+                
+                state.currentFocusedSentence = sentenceId;
+                updateInput($this, input, target);
+                checkComplete($this, input, target, sentenceId);
+            });
+
+            $(document).on('focus', '.input-field', function() {
+                state.currentFocusedSentence = $(this).data('sentence-id');
+            });
+
+            // 语音播放
+            $(document).on('click', '.speak-btn', function() {
+                const text = $(this).data('text');
+                speakSentence(text, $(this));
+            });
+
+            // 英文显示切换
+            $(document).on('click', '.toggle-english', function() {
+                const sentenceId = $(this).data('sentence-id');
+                toggleEnglish(sentenceId, $(this));
+            });
+
+            // 收藏切换
+            $(document).on('click', '.like-btn', function() {
+                const sentenceId = $(this).data('sentence-id');
+                toggleLike(sentenceId, $(this));
+            });
+
+            // 全局快捷键
+            $(document).keydown(function(e) {
+                if (e.key === '\\' && state.currentFocusedSentence) {
+                    e.preventDefault();
+                    const sentence = state.sentences.find(s => s.id == state.currentFocusedSentence);
+                    if (sentence) {
+                        speakSentence(sentence.text);
+                    }
+                } else if (e.key === '=' && state.currentFocusedSentence) {
+                    e.preventDefault();
+                    toggleEnglish(state.currentFocusedSentence);
+                }
+            });
+
+            // 翻译
+            $('#englishInput').on('input', debounce(translateText, 1000));
+
+            // 保存句子
+            $('#saveBtn').click(saveSentence);
+        }
+
+        // 实时输入高亮
+        function updateInput($element, input, target) {
+            const targetWords = target.split(' ');
+            const inputWords = input.split(' ');
+            
+            let highlightedHTML = '';
+            
+            for (let i = 0; i < Math.max(targetWords.length, inputWords.length); i++) {
+                const targetWord = targetWords[i] || '';
+                const inputWord = inputWords[i] || '';
+                
+                if (i < inputWords.length) {
+                    if (targetWord.toLowerCase() === inputWord.toLowerCase()) {
+                        highlightedHTML += `<span class="highlight">${inputWord}</span>`;
+                    } else {
+                        highlightedHTML += inputWord;
+                    }
+                    
+                    if (i < inputWords.length - 1) {
+                        highlightedHTML += '<span class="space-char"></span>';
+                    }
+                }
+            }
+            
+            const selection = window.getSelection();
+            const range = selection.rangeCount > 0 ? selection.getRangeAt(0) : null;
+            const offset = range ? range.startOffset : 0;
+            
+            $element.html(highlightedHTML);
+            
+            // 恢复光标位置
+            if (range) {
+                setTimeout(() => restoreCaret($element[0], offset), 0);
+            }
+        }
+
+        // 完成检测
+        async function checkComplete($element, input, target, sentenceId) {
+            if (input.toLowerCase().trim() === target.toLowerCase().trim()) {
+                const sentence = state.sentences.find(s => s.id == sentenceId);
+                if (sentence && !sentence.isComplete) {
+                    sentence.isComplete = true;
+                    
+                    $element.siblings('.correct-indicator').removeClass('hidden');
+                    playSuccessSound();
+                    
+                    // 调用API更新练习次数
+                    try {
+                        const response = await fetch('http://localhost:5678/addSentenceCount', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                sentenceId: sentenceId,
+                                userId: 1
+                            })
+                        });
+                        const result = await response.json();
+                        sentence.usage_count = result.new_count;
+                        
+                        // 更新显示
+                        setTimeout(() => {
+                            $element.closest('.sentence-item').find('.text-gray-500').text(`练习次数: ${sentence.usage_count}`);
+                        }, 500);
+                    } catch (error) {
+                        console.error('更新练习次数失败:', error);
+                    }
+                }
+            }
+        }
+
+        // 语音播放
+        function speakSentence(text, $btn) {
+            if ($btn) {
+                $btn.prop('disabled', true).text('播放中...');
+            }
+            
+            if ('speechSynthesis' in window) {
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'en-US';
+                utterance.onend = () => {
+                    if ($btn) {
+                        setTimeout(() => {
+                            $btn.prop('disabled', false).text('🔊 播放');
+                        }, 1000);
+                    }
+                };
+                speechSynthesis.speak(utterance);
+            }
+        }
+
+        // 英文显示切换
+        function toggleEnglish(sentenceId, $btn) {
+            const sentence = state.sentences.find(s => s.id == sentenceId);
+            if (sentence) {
+                sentence.showEnglish = !sentence.showEnglish;
+                const $item = $(`.sentence-item[data-id="${sentenceId}"]`);
+                const $english = $item.find('.english-text');
+                const $toggleBtn = $btn || $item.find('.toggle-english');
+                
+                if (sentence.showEnglish) {
+                    $english.removeClass('hidden');
+                    $toggleBtn.text('隐藏英文');
+                } else {
+                    $english.addClass('hidden');
+                    $toggleBtn.text('显示英文');
+                }
+            }
+        }
+
+        // 收藏切换
+        async function toggleLike(sentenceId, $btn) {
+            $btn.prop('disabled', true);
+            
+            try {
+                const response = await fetch('http://localhost:5678/toggleLike', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        sentence_id: sentenceId
+                    })
+                });
+                const result = await response.json();
+                
+                if (result.success) {
+                    const sentence = state.sentences.find(s => s.id == sentenceId);
+                    if (sentence) {
+                        sentence.is_liked = result.liked;
+                        $btn.removeClass('bg-red-500 bg-gray-300 hover:bg-red-600 hover:bg-gray-400')
+                            .addClass(sentence.is_liked ? 'bg-red-500 hover:bg-red-600' : 'bg-gray-300 hover:bg-gray-400')
+                            .text(sentence.is_liked ? '❤️ 已收藏' : '🤍 收藏');
+                    }
+                }
+            } catch (error) {
+                console.error('切换收藏状态失败:', error);
+            } finally {
+                $btn.prop('disabled', false);
+            }
+        }
+
+        // 光标位置恢复
+        function restoreCaret(element, offset) {
+            const range = document.createRange();
+            const selection = window.getSelection();
+            
+            try {
+                const textNode = element.childNodes[0] || element;
+                range.setStart(textNode, Math.min(offset, textNode.textContent?.length || 0));
+                range.collapse(true);
+                selection.removeAllRanges();
+                selection.addRange(range);
+            } catch (e) {
+                // 忽略错误
+            }
+        }
+
+        // 成功音效
+        function playSuccessSound() {
+            const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIG2m98OScTgwOUarm7blmGgU7k9n1unEiBC13yO/eizEIHWq+8+OWT');
+            audio.play().catch(() => {});
+        }
+
+        // 翻译功能
+        async function translateText() {
+            const english = $('#englishInput').val().trim();
+            if (!english) return;
+            
+            $('#translateLoading').removeClass('hidden');
+            
+            try {
+                const response = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(english)}&langpair=en|zh`);
+                const data = await response.json();
+                const chinese = data.responseData.translatedText;
+                $('#chineseInput').val(chinese);
+            } catch (error) {
+                console.error('翻译失败:', error);
+                $('#chineseInput').val('翻译失败，请手动输入中文');
+            } finally {
+                $('#translateLoading').addClass('hidden');
+            }
+        }
+
+        // 保存句子
+        async function saveSentence() {
+            const text = $('#englishInput').val().trim();
+            const text_zh = $('#chineseInput').val().trim();
+            const notebook_id = $('#notebookSelect').val();
+            
+            if (!text || !text_zh || !notebook_id) {
+                alert('请填写完整信息');
+                return;
+            }
+            
+            try {
+                const response = await fetch('http://localhost:5678/createSentence', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        text,
+                        text_zh,
+                        notebook_id: parseInt(notebook_id)
+                    })
+                });
+                
+                if (response.ok) {
+                    clearAddForm();
+                    // 重新加载当前笔记本的句子
+                    if (state.currentNotebook !== null) {
+                        loadSentences(state.currentNotebook);
+                    }
+                    $('#addPage').hide();
+                    $('#practicePage').show();
+                }
+            } catch (error) {
+                console.error('保存句子失败:', error);
+                alert('保存失败，请重试');
+            }
+        }
+
+        // 清空添加表单
+        function clearAddForm() {
+            $('#englishInput, #chineseInput').val('');
+            $('#notebookSelect').val('');
+        }
+
+        // 防抖函数
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+    </script>
+</body>
+</html>
