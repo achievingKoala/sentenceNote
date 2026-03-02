@@ -357,7 +357,8 @@
                     e.preventDefault();
                     const sentence = state.sentences.find(s => s.id == state.currentFocusedSentence);
                     if (sentence) {
-                        speakSentence(sentence.text);
+                        const $btn = $(`.sentence-item[data-id="${state.currentFocusedSentence}"] .speak-btn`);
+                        speakSentence(sentence.text, $btn);
                     }
                 } else if (e.key === '=' && state.currentFocusedSentence) {
                     e.preventDefault();
