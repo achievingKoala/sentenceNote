@@ -7,7 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <style>
-        .highlight { background-color: #22c55e; color: white; }
+        .highlight { color: green; }
         .correct-indicator { animation: flash 0.5s; }
         @keyframes flash { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
         [contenteditable]:focus { outline: 2px solid #3b82f6; }
@@ -95,7 +95,7 @@
 
     <script>
         // 全局配置
-        const API_BASE_URL = 'http://localhost:8000';
+        const API_BASE_URL = 'https://notebook-back-ldu7.onrender.com';
         
         // 全局状态
         let state = {
@@ -374,47 +374,56 @@
 
         // 实时输入高亮
         function updateInput($element, input, target) {
-            const targetWords = target.split(' ');
-            const inputWords = input.split(' ');
+            const editor = $element[0];
             
-            let highlightedHTML = '';
+            // 保存光标位置
+            const sel = window.getSelection();
+            if (!sel.rangeCount) return;
+            const range = sel.getRangeAt(0);
+            const preCaretRange = range.cloneRange();
+            preCaretRange.selectNodeContents(editor);
+            preCaretRange.setEnd(range.endContainer, range.endOffset);
+            const caretOffset = preCaretRange.toString().length;
             
-            for (let i = 0; i < Math.max(targetWords.length, inputWords.length); i++) {
-                const targetWord = targetWords[i] || '';
-                const inputWord = inputWords[i] || '';
-                
-                if (i < inputWords.length) {
-                    if (targetWord.toLowerCase() === inputWord.toLowerCase()) {
-                        highlightedHTML += `<span class="highlight">${inputWord}</span>`;
-                    } else {
-                        highlightedHTML += inputWord;
-                    }
-                    
-                    if (i < inputWords.length - 1) {
-                        highlightedHTML += '<span class="space-char"></span>';
-                    }
+            // 获取句子中的单词
+            const sentenceWords = target.split(/\s+/).filter(word => word.length > 0);
+            // 高亮匹配的单词
+            const words = input.split(/(\s+)/).map(word => {
+                const cleanWord = word.trim();
+                if (cleanWord && sentenceWords.includes(cleanWord)) {
+                    return `<span class="highlight">${word.replace(/ /g, '&nbsp;')}</span>`;
                 }
-            }
+                // 处理空格
+                if (/^\s+$/.test(word)) {
+                    return word.replace(/ /g, '&nbsp;');
+                }
+                return word;
+            });
             
-            const selection = window.getSelection();
-            const range = selection.rangeCount > 0 ? selection.getRangeAt(0) : null;
-            const offset = range ? range.startOffset : 0;
-            
-            $element.html(highlightedHTML);
+            const html = words.join('');
+            editor.innerHTML = html;
             
             // 恢复光标位置
-            if (range) {
-                setTimeout(() => restoreCaret($element[0], offset), 0);
-            }
+            restoreCaret(editor, caretOffset);
         }
 
         // 完成检测
         async function checkComplete($element, input, target, sentenceId) {
-            if (input.toLowerCase().trim() === target.toLowerCase().trim()) {
-                const sentence = state.sentences.find(s => s.id == sentenceId);
-                if (sentence && !sentence.isComplete) {
-                    sentence.isComplete = true;
-                    
+            if (!input) {
+                return;
+            }
+            
+            // 去两边空格
+            const userText = input.replace(/\s/g, ' ').trim();
+            const originalText = target.replace(/\s/g, ' ').trim();
+            const sentence = state.sentences.find(s => s.id == sentenceId);
+            
+            if (sentence) {
+                const wasComplete = sentence.isComplete;
+                sentence.isComplete = userText === originalText;
+                
+                // 如果句子刚刚完成（之前未完成，现在完成），则播放成功音效并更新练习次数
+                if (sentence.isComplete && !wasComplete) {
                     $element.siblings('.correct-indicator').removeClass('hidden');
                     playSuccessSound();
                     
@@ -550,18 +559,34 @@
         }
 
         // 光标位置恢复
-        function restoreCaret(element, offset) {
+        function restoreCaret(container, offset) {
             const range = document.createRange();
-            const selection = window.getSelection();
+            const sel = window.getSelection();
+            let currentOffset = 0;
+            
+            const traverse = (node) => {
+                if (node.nodeType === Node.TEXT_NODE) {
+                    const len = node.textContent.length;
+                    if (currentOffset + len >= offset) {
+                        range.setStart(node, offset - currentOffset);
+                        range.collapse(true);
+                        sel.removeAllRanges();
+                        sel.addRange(range);
+                        throw 'done';
+                    } else {
+                        currentOffset += len;
+                    }
+                } else {
+                    for (let child of node.childNodes) {
+                        traverse(child);
+                    }
+                }
+            };
             
             try {
-                const textNode = element.childNodes[0] || element;
-                range.setStart(textNode, Math.min(offset, textNode.textContent?.length || 0));
-                range.collapse(true);
-                selection.removeAllRanges();
-                selection.addRange(range);
+                traverse(container);
             } catch (e) {
-                // 忽略错误
+                // 捕获跳出
             }
         }
 
