@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>句子笔记应用</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <style>
+        .highlight { color: green; }
+        .sentence-input[data-placeholder]:empty::before {
+            content: attr(data-placeholder);
+            color: #999;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div class="flex h-screen">
+        <!-- 侧边栏 -->
+        <div class="w-48 bg-gray-50 border-r border-gray-200 p-4">
+            <div class="menu-item p-3 cursor-pointer border-b border-gray-200 hover:bg-gray-200" data-view="add">
+                <div class="font-bold">添加页面</div>
+            </div>
+            <div class="menu-item p-3 cursor-pointer border-b border-gray-200 hover:bg-gray-200" data-notebook="-1">
+                <div class="font-bold">全部句子</div>
+                <div class="text-xs opacity-80">All Sentences</div>
+            </div>
+            <div id="notebooks-list"></div>
+        </div>
+
+        <!-- 主内容区 -->
+        <div class="flex-1 overflow-auto">
+            <!-- 添加页面 -->
+            <div id="add-page" class="flex flex-col items-center justify-center h-full gap-5">
+                <textarea id="text-input" class="w-96 h-32 p-6 text-lg border border-gray-300 rounded resize-y" placeholder="输入英文"></textarea>
+                <div class="relative w-96">
+                    <textarea id="text-zh-input" class="w-full h-32 p-6 text-lg border border-gray-300 rounded resize-y" placeholder="中文翻译"></textarea>
+                    <div id="translating" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-blue-500 text-white px-4 py-2 rounded text-sm hidden">翻译中...</div>
+                </div>
+                <select id="notebook-select" class="w-80 p-3 text-base border border-gray-300 rounded">
+                    <option value="">选择笔记本</option>
+                </select>
+                <button id="save-btn" class="px-5 py-2 text-base bg-blue-500 text-white rounded hover:bg-blue-600">保存</button>
+                <div id="message" class="hidden px-5 py-3 rounded text-sm text-center max-w-96"></div>
+            </div>
+
+            <!-- 句子视图页面 -->
+            <div id="sentence-view" class="p-5 hidden">
+                <div class="flex justify-center items-center gap-3 mb-5">
+                    <span id="sentence-count" class="px-3 py-2 text-sm text-gray-700">共 0 条</span>
+                    <button id="favorites-btn" class="px-3 py-2 text-sm bg-cyan-500 text-white rounded hover:bg-cyan-600">仅显示收藏</button>
+                    <button id="sort-asc-btn" class="px-3 py-2 text-sm bg-blue-800 text-white rounded hover:bg-orange-500">次数正序 ↓</button>
+                    <button id="sort-desc-btn" class="px-3 py-2 text-sm bg-blue-800 text-white rounded hover:bg-orange-500">次数倒序 ↑</button>
+                    <button id="random-btn" class="px-3 py-2 text-sm bg-purple-600 text-white rounded hover:bg-purple-700">随机展示</button>
+                </div>
+                <div id="sentences-container"></div>
+                <div id="pagination" class="flex justify-center items-center gap-3 mt-5 hidden">
+                    <button id="first-page" class="px-4 py-2 text-sm bg-blue-500 text-white rounded hover:bg-blue-600">首页</button>
+                    <button id="prev-page" class="px-4 py-2 text-sm bg-blue-500 text-white rounded hover:bg-blue-600">上一页</button>
+                    <span id="page-info" class="px-3 py-2 text-sm text-gray-700">1 / 1</span>
+                    <button id="next-page" class="px-4 py-2 text-sm bg-blue-500 text-white rounded hover:bg-blue-600">下一页</button>
+                    <button id="last-page" class="px-4 py-2 text-sm bg-blue-500 text-white rounded hover:bg-blue-600">末页</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'https://notebook-back-ldu7.onrender.com';
+        const API_KEY = "BxmaEznl4foxzzjLNTxmZ7F8ibK9tNtmm1Cbsyo7Yi45KdebV0oPJQQJ99AKACYeBjFXJ3w3AAAYACOGd5KZ";
+        const REGION = "eastus";
+        
+        let notebooks = [];
+        let currentSentences = [];
+        let filteredSentences = [];
+        let currentPage = 1;
+        const pageSize = 5;
+        let showFavoritesOnly = false;
+        let sortOrder = 'none';
+        let currentFocusedSentence = null;
+        let translateTimer = null;
+
+        $(document).ready(function() {
+            fetchNotebooks();
+            setupEventListeners();
+            showAddPage();
+        });
+
+        function setupEventListeners() {
+            // 侧边栏点击
+            $(document).on('click', '.menu-item', function() {
+                $('.menu-item').removeClass('bg-blue-500 text-white');
+                $(this).addClass('bg-blue-500 text-white');
+                
+                if ($(this).data('view') === 'add') {
+                    showAddPage();
+                } else {
+                    const notebookId = $(this).data('notebook');
+                    selectNotebook(notebookId);
+                }
+            });
+
+            // 添加页面事件
+            $('#text-input').on('input', translateText);
+            $('#save-btn').click(save);
+
+            // 句子视图事件
+            $('#favorites-btn').click(toggleFavoritesOnly);
+            $('#sort-asc-btn').click(() => sortSentences('asc'));
+            $('#sort-desc-btn').click(() => sortSentences('desc'));
+            $('#random-btn').click(shuffleSentences);
+
+            // 分页事件
+            $('#first-page').click(() => goToPage(1));
+            $('#prev-page').click(() => goToPage(currentPage - 1));
+            $('#next-page').click(() => goToPage(currentPage + 1));
+            $('#last-page').click(() => goToPage(Math.ceil(filteredSentences.length / pageSize)));
+
+            // 键盘快捷键
+            $(document).keydown(function(e) {
+                if (e.key === '\\' && !e.ctrlKey && !e.altKey && !e.metaKey) {
+                    e.preventDefault();
+                    if (currentFocusedSentence) {
+                        speakSentence(currentFocusedSentence);
+                    }
+                }
+                if (e.key === '=' && !e.ctrlKey && !e.altKey && !e.metaKey) {
+                    e.preventDefault();
+                    if (currentFocusedSentence) {
+                        toggleEnglish(currentFocusedSentence);
+                    }
+                }
+            });
+        }
+
+        async function fetchNotebooks() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/webhook/notebooks`);
+                notebooks = await response.json();
+                
+                // 填充侧边栏
+                const notebooksList = $('#notebooks-list');
+                notebooks.forEach(notebook => {
+                    notebooksList.append(`
+                        <div class="menu-item p-3 cursor-pointer border-b border-gray-200 hover:bg-gray-200" data-notebook="${notebook.id}">
+                            <div class="font-bold">${notebook.name_zh}</div>
+                            <div class="text-xs opacity-80">${notebook.name}</div>
+                        </div>
+                    `);
+                });
+
+                // 填充下拉框
+                const select = $('#notebook-select');
+                notebooks.forEach(notebook => {
+                    select.append(`<option value="${notebook.id}">${notebook.name_zh} - ${notebook.name}</option>`);
+                });
+
+                // 默认选择第一个笔记本
+                const firstNotebook = notebooks.find(nb => nb.name === 'first');
+                if (firstNotebook) {
+                    select.val(firstNotebook.id);
+                }
+            } catch (error) {
+                console.error('获取笔记本失败:', error);
+            }
+        }
+
+        function showAddPage() {
+            $('#add-page').show();
+            $('#sentence-view').hide();
+        }
+
+        function showSentenceView() {
+            $('#add-page').hide();
+            $('#sentence-view').show();
+        }
+
+        async function selectNotebook(notebookId) {
+            showSentenceView();
+            try {
+                const response = await fetch(`${API_BASE_URL}/webhook/sentenceStatsByNotebookId?notebookId=${notebookId}`);
+                currentSentences = await response.json();
+                
+                // 初始化句子属性
+                currentSentences.forEach(sentence => {
+                    sentence.userInput = '';
+                    sentence.showEnglish = false;
+                    sentence.isComplete = false;
+                    sentence.isLiking = false;
+                    sentence.isSpeaking = false;
+                });
+                
+                updateFilteredSentences();
+                renderSentences();
+            } catch (error) {
+                console.error('获取句子失败:', error);
+                currentSentences = [];
+                updateFilteredSentences();
+                renderSentences();
+            }
+        }
+
+        function translateText() {
+            if (translateTimer) {
+                clearTimeout(translateTimer);
+            }
+            
+            translateTimer = setTimeout(async () => {
+                const text = $('#text-input').val().trim();
+                if (text) {
+                    $('#translating').show();
+                    try {
+                        const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=en|zh`;
+                        const response = await fetch(url);
+                        const data = await response.json();
+                        $('#text-zh-input').val(data.responseData.translatedText);
+                    } catch (error) {
+                        console.error('翻译失败:', error);
+                        $('#text-zh-input').val('翻译失败');
+                    } finally {
+                        $('#translating').hide();
+                    }
+                } else {
+                    $('#text-zh-input').val('');
+                }
+            }, 500);
+        }
+
+        async function save() {
+            const text = $('#text-input').val().trim();
+            const textZh = $('#text-zh-input').val().trim();
+            const notebookId = $('#notebook-select').val();
+
+            if (!text || !textZh || !notebookId) {
+                showMessage('请填写完整信息', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/webhook/createSentence`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        text: text,
+                        text_zh: textZh,
+                        notebook_id: notebookId
+                    })
+                });
+
+                if (response.ok) {
+                    showMessage('保存成功', 'success');
+                    $('#text-input').val('');
+                    $('#text-zh-input').val('');
+                } else {
+                    showMessage('保存失败', 'error');
+                }
+            } catch (error) {
+                console.error('保存失败:', error);
+                showMessage('保存失败', 'error');
+            }
+        }
+
+        function showMessage(text, type) {
+            const message = $('#message');
+            message.removeClass('hidden bg-green-100 text-green-700 border-green-300 bg-red-100 text-red-700 border-red-300');
+            
+            if (type === 'success') {
+                message.addClass('bg-green-100 text-green-700 border border-green-300');
+            } else {
+                message.addClass('bg-red-100 text-red-700 border border-red-300');
+            }
+            
+            message.text(text).show();
+            setTimeout(() => message.hide(), 3000);
+        }
+
+        function updateFilteredSentences() {
+            filteredSentences = showFavoritesOnly 
+                ? currentSentences.filter(s => s.is_liked)
+                : [...currentSentences];
+            
+            if (sortOrder === 'asc') {
+                filteredSentences.sort((a, b) => a.usage_count - b.usage_count);
+            } else if (sortOrder === 'desc') {
+                filteredSentences.sort((a, b) => b.usage_count - a.usage_count);
+            }
+            
+            $('#sentence-count').text(`共 ${filteredSentences.length} 条`);
+        }
+
+        function renderSentences() {
+            const container = $('#sentences-container');
+            container.empty();
+            
+            const totalPages = Math.ceil(filteredSentences.length / pageSize);
+            const start = (currentPage - 1) * pageSize;
+            const end = start + pageSize;
+            const paginatedSentences = filteredSentences.slice(start, end);
+            
+            paginatedSentences.forEach(sentence => {
+                const card = $(`
+                    <div class="bg-white rounded-lg p-5 mb-4 shadow border border-gray-200" data-id="${sentence.id}">
+                        <div class="text-xl leading-relaxed text-gray-600 italic mb-2">${sentence.text_zh}</div>
+                        <div class="sentence-english text-3xl leading-relaxed text-gray-800 mb-3 ${sentence.showEnglish ? '' : 'hidden'}">${sentence.text}</div>
+                        <div class="sentence-input w-full p-3 border border-gray-300 rounded text-3xl outline-none min-h-5 whitespace-pre-wrap break-words focus:border-blue-500" 
+                             contenteditable="${!sentence.isComplete}" 
+                             data-placeholder="${sentence.userInput ? '' : '输入英文句子...'}"
+                             spellcheck="false"></div>
+                        <div class="flex gap-2 mt-3">
+                            <button class="speak-btn px-3 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600" ${sentence.isSpeaking ? 'disabled' : ''}>
+                                ${sentence.isSpeaking ? '播放中...' : '发声'} (快捷键: \\)
+                            </button>
+                            <button class="toggle-english-btn px-3 py-1 text-xs bg-green-500 text-white rounded hover:bg-green-600">
+                                ${sentence.showEnglish ? '隐藏英文' : '显示英文'} (快捷键: =)
+                            </button>
+                            <button class="like-btn px-3 py-1 text-xs rounded ${sentence.is_liked ? 'bg-red-500 hover:bg-red-600' : 'bg-gray-600 hover:bg-gray-700'} text-white" ${sentence.isLiking ? 'disabled' : ''}>
+                                ${sentence.isLiking ? '处理中...' : (sentence.is_liked ? '❤️ 已收藏' : '🤍 收藏')}
+                            </button>
+                            <div class="px-3 py-1 text-xs text-gray-800">完成次数: ${sentence.usage_count}</div>
+                        </div>
+                        <div class="correct-indicator mt-2 text-green-500 font-bold text-sm ${sentence.isComplete ? '' : 'hidden'}">✓ 正确！</div>
+                    </div>
+                `);
+                
+                container.append(card);
+                
+                // 绑定事件
+                const inputEl = card.find('.sentence-input');
+                inputEl.on('input', function(e) {
+                    updateInput(e, sentence);
+                });
+                inputEl.on('focus', function() {
+                    currentFocusedSentence = sentence;
+                });
+                
+                card.find('.speak-btn').click(() => speakSentence(sentence));
+                card.find('.toggle-english-btn').click(() => toggleEnglish(sentence));
+                card.find('.like-btn').click(() => toggleLike(sentence));
+            });
+            
+            // 更新分页
+            updatePagination(totalPages);
+        }
+
+        function updateInput(event, sentence) {
+            const editor = event.target;
+            const text = editor.textContent;
+            sentence.userInput = text;
+            currentFocusedSentence = sentence;
+            
+            // 保存光标位置
+            const sel = window.getSelection();
+            if (!sel.rangeCount) return;
+            const range = sel.getRangeAt(0);
+            const preCaretRange = range.cloneRange();
+            preCaretRange.selectNodeContents(editor);
+            preCaretRange.setEnd(range.endContainer, range.endOffset);
+            const caretOffset = preCaretRange.toString().length;
+            
+            // 高亮匹配的单词
+            const sentenceWords = sentence.text.split(/\s+/).filter(word => word.length > 0);
+            const words = text.split(/(\\s+)/).map(word => {
+                const cleanWord = word.trim();
+                if (cleanWord && sentenceWords.includes(cleanWord)) {
+                    return `<span class="highlight">${word.replace(/ /g, '&nbsp;')}</span>`;
+                }
+                if (/^\\s+$/.test(word)) {
+                    return word.replace(/ /g, '&nbsp;');
+                }
+                return word;
+            });
+            
+            const html = words.join('');
+            editor.innerHTML = html;
+            
+            // 恢复光标位置
+            restoreCaret(editor, caretOffset);
+            
+            // 检查是否完成
+            checkComplete(sentence);
+        }
+
+        function restoreCaret(container, offset) {
+            const range = document.createRange();
+            const sel = window.getSelection();
+            let currentOffset = 0;
+            
+            const traverse = (node) => {
+                if (node.nodeType === Node.TEXT_NODE) {
+                    const len = node.textContent.length;
+                    if (currentOffset + len >= offset) {
+                        range.setStart(node, offset - currentOffset);
+                        range.collapse(true);
+                        sel.removeAllRanges();
+                        sel.addRange(range);
+                        throw 'done';
+                    } else {
+                        currentOffset += len;
+                    }
+                } else {
+                    for (let child of node.childNodes) {
+                        traverse(child);
+                    }
+                }
+            };
+            
+            try {
+                traverse(container);
+            } catch (e) {
+                // 捕获跳出
+            }
+        }
+
+        async function checkComplete(sentence) {
+            if (!sentence.userInput) {
+                sentence.isComplete = false;
+                return;
+            }
+            
+            const userText = sentence.userInput.replace(/\\s/g, ' ').trim();
+            const originalText = sentence.text.replace(/\\s/g, ' ').trim();
+            const wasComplete = sentence.isComplete;
+            sentence.isComplete = userText === originalText;
+            
+            const card = $(`.bg-white[data-id="${sentence.id}"]`);
+            const indicator = card.find('.correct-indicator');
+            const inputEl = card.find('.sentence-input');
+            
+            if (sentence.isComplete) {
+                indicator.removeClass('hidden');
+                inputEl.attr('contenteditable', 'false').addClass('bg-gray-50 cursor-not-allowed opacity-80');
+                
+                if (!wasComplete) {
+                    playSuccessSound();
+                    await updateSentenceCount(sentence);
+                    card.find('.px-3.py-1.text-xs.text-gray-800').text(`完成次数: ${sentence.usage_count}`);
+                }
+            } else {
+                indicator.addClass('hidden');
+                inputEl.attr('contenteditable', 'true').removeClass('bg-gray-50 cursor-not-allowed opacity-80');
+            }
+        }
+
+        async function updateSentenceCount(sentence) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/webhook/addSentenceCount`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ sentenceId: sentence.id })
+                });
+                
+                const result = await response.json();
+                if (result.new_count !== undefined) {
+                    sentence.usage_count = result.new_count;
+                }
+            } catch (error) {
+                console.error('Update sentence count error:', error);
+            }
+        }
+
+        async function speakSentence(sentence) {
+            if (sentence.isSpeaking) return;
+            
+            sentence.isSpeaking = true;
+            const card = $(`.bg-white[data-id="${sentence.id}"]`);
+            const btn = card.find('.speak-btn');
+            btn.prop('disabled', true).text('播放中...');
+            
+            try {
+                await speakText(sentence.text);
+            } catch (error) {
+                console.error('Speech error:', error);
+            } finally {
+                setTimeout(() => {
+                    sentence.isSpeaking = false;
+                    btn.prop('disabled', false).text('发声 (快捷键: \\)');
+                }, 1000);
+            }
+        }
+
+        async function speakText(text) {
+            if (text.trim() === "") return;
+            
+            const headers = {
+                "Content-Type": "application/ssml+xml",
+                "X-Microsoft-OutputFormat": "audio-16khz-32kbitrate-mono-mp3",
+                "Ocp-Apim-Subscription-Key": API_KEY,
+            };
+            
+            const body = `
+                <speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xml:lang="en-US">
+                    <voice name="en-US-JennyNeural">${text}</voice>
+                </speak>`;
+            
+            try {
+                const response = await fetch(`https://${REGION}.tts.speech.microsoft.com/cognitiveservices/v1`, {
+                    method: "POST",
+                    headers,
+                    body,
+                });
+                
+                if (!response.ok) {
+                    throw new Error("Text-to-speech request failed");
+                }
+                
+                const audioBlob = await response.blob();
+                const audioUrl = URL.createObjectURL(audioBlob);
+                const audio = new Audio(audioUrl);
+                audio.play();
+            } catch (error) {
+                console.error("Error in Text-to-Speech:", error);
+            }
+        }
+
+        function toggleEnglish(sentence) {
+            sentence.showEnglish = !sentence.showEnglish;
+            const card = $(`.bg-white[data-id="${sentence.id}"]`);
+            const englishEl = card.find('.sentence-english');
+            const btn = card.find('.toggle-english-btn');
+            
+            if (sentence.showEnglish) {
+                englishEl.removeClass('hidden');
+                btn.text('隐藏英文 (快捷键: =)');
+            } else {
+                englishEl.addClass('hidden');
+                btn.text('显示英文 (快捷键: =)');
+            }
+        }
+
+        async function toggleLike(sentence) {
+            if (sentence.isLiking) return;
+            
+            sentence.isLiking = true;
+            const card = $(`.bg-white[data-id="${sentence.id}"]`);
+            const btn = card.find('.like-btn');
+            btn.prop('disabled', true).text('处理中...');
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/webhook/toggleLike`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ sentence_id: sentence.id })
+                });
+                
+                const result = await response.json();
+                if (result.success) {
+                    sentence.is_liked = result.liked;
+                    btn.removeClass('bg-red-500 hover:bg-red-600 bg-gray-600 hover:bg-gray-700');
+                    if (sentence.is_liked) {
+                        btn.addClass('bg-red-500 hover:bg-red-600').text('❤️ 已收藏');
+                    } else {
+                        btn.addClass('bg-gray-600 hover:bg-gray-700').text('🤍 收藏');
+                    }
+                }
+            } catch (error) {
+                console.error('Toggle like error:', error);
+            } finally {
+                sentence.isLiking = false;
+                btn.prop('disabled', false);
+            }
+        }
+
+        function toggleFavoritesOnly() {
+            showFavoritesOnly = !showFavoritesOnly;
+            const btn = $('#favorites-btn');
+            
+            if (showFavoritesOnly) {
+                btn.removeClass('bg-cyan-500 hover:bg-cyan-600').addClass('bg-green-400 hover:bg-green-500').text('显示全部');
+            } else {
+                btn.removeClass('bg-green-400 hover:bg-green-500').addClass('bg-cyan-500 hover:bg-cyan-600').text('仅显示收藏');
+            }
+            
+            currentPage = 1;
+            updateFilteredSentences();
+            renderSentences();
+        }
+
+        function sortSentences(order) {
+            if (sortOrder === order) {
+                sortOrder = 'none';
+            } else {
+                sortOrder = order;
+            }
+            
+            $('#sort-asc-btn, #sort-desc-btn').removeClass('bg-green-500 hover:bg-red-600').addClass('bg-blue-800 hover:bg-orange-500');
+            
+            if (sortOrder === 'asc') {
+                $('#sort-asc-btn').removeClass('bg-blue-800 hover:bg-orange-500').addClass('bg-green-500 hover:bg-red-600');
+            } else if (sortOrder === 'desc') {
+                $('#sort-desc-btn').removeClass('bg-blue-800 hover:bg-orange-500').addClass('bg-green-500 hover:bg-red-600');
+            }
+            
+            currentPage = 1;
+            updateFilteredSentences();
+            renderSentences();
+        }
+
+        function shuffleSentences() {
+            sortOrder = 'none';
+            $('#sort-asc-btn, #sort-desc-btn').removeClass('bg-green-500 hover:bg-red-600').addClass('bg-blue-800 hover:bg-orange-500');
+            
+            for (let i = currentSentences.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [currentSentences[i], currentSentences[j]] = [currentSentences[j], currentSentences[i]];
+            }
+            
+            updateFilteredSentences();
+            renderSentences();
+        }
+
+        function updatePagination(totalPages) {
+            const pagination = $('#pagination');
+            
+            if (totalPages <= 1) {
+                pagination.addClass('hidden');
+                return;
+            }
+            
+            pagination.removeClass('hidden');
+            $('#page-info').text(`${currentPage} / ${totalPages}`);
+            
+            $('#first-page, #prev-page').prop('disabled', currentPage === 1);
+            $('#next-page, #last-page').prop('disabled', currentPage === totalPages);
+        }
+
+        function goToPage(page) {
+            const totalPages = Math.ceil(filteredSentences.length / pageSize);
+            if (page < 1 || page > totalPages) return;
+            
+            currentPage = page;
+            renderSentences();
+        }
+
+        function playSuccessSound() {
+            try {
+                const audio = new Audio('/success.mp3');
+                audio.play().catch(error => {
+                    console.error('播放成功音效失败:', error);
+                });
+            } catch (error) {
+                console.error('创建音频对象失败:', error);
+            }
+        }
+    </script>
+</body>
+</html>

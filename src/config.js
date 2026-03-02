@@ -1,1 +1,1 @@
-export const API_BASE_URL = 'http://34.64.178.74:5678'
+export const API_BASE_URL = 'https://notebook-back-ldu7.onrender.com'
