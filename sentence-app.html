@@ -16,13 +16,13 @@
 </head>
 <body class="bg-gray-50 h-screen flex">
     <!-- 侧边栏 -->
-    <div class="w-80 bg-white shadow-lg">
+    <div class="w-64 bg-white shadow-lg">
         <div class="p-6 border-b">
             <h1 class="text-2xl font-bold text-gray-800">句子笔记</h1>
         </div>
         <div class="p-4">
             <button id="addBtn" class="w-full bg-blue-600 text-white py-3 px-4 rounded-lg mb-4 hover:bg-blue-700 font-medium">添加句子</button>
-            <div id="notebooks"></div>
+            <div id="notebooks" class="overflow-y-auto" style="max-height: calc(100vh - 200px);"></div>
         </div>
     </div>
 
