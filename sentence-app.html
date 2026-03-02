@@ -444,24 +444,58 @@
             }
         }
 
+        // Azure TTS 配置
+        const AZURE_API_KEY = "BxmaEznl4foxzzjLNTxmZ7F8ibK9tNtmm1Cbsyo7Yi45KdebV0oPJQQJ99AKACYeBjFXJ3w3AAAYACOGd5KZ";
+        const AZURE_REGION = "eastus";
+
         // 语音播放
-        function speakSentence(text, $btn) {
+        async function speakSentence(text, $btn) {
             if ($btn) {
                 $btn.prop('disabled', true).text('播放中...');
             }
             
-            if ('speechSynthesis' in window) {
-                const utterance = new SpeechSynthesisUtterance(text);
-                utterance.lang = 'en-US';
-                utterance.onend = () => {
-                    if ($btn) {
-                        setTimeout(() => {
-                            $btn.prop('disabled', false).text('🔊 播放');
-                        }, 1000);
-                    }
-                };
-                speechSynthesis.speak(utterance);
+            try {
+                await speakWithAzure(text);
+            } catch (error) {
+                console.error('语音播放失败:', error);
+            } finally {
+                if ($btn) {
+                    setTimeout(() => {
+                        $btn.prop('disabled', false).text('🔊 播放');
+                    }, 1000);
+                }
             }
+        }
+
+        // Azure TTS 语音合成
+        async function speakWithAzure(text) {
+            if (text.trim() === "") return;
+
+            const headers = {
+                "Content-Type": "application/ssml+xml",
+                "X-Microsoft-OutputFormat": "audio-16khz-32kbitrate-mono-mp3",
+                "Ocp-Apim-Subscription-Key": AZURE_API_KEY,
+            };
+
+            const body = `
+                <speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xml:lang="en-US">
+                    <voice name="en-US-JennyNeural">${text}</voice>
+                </speak>`;
+
+            const response = await fetch(`https://${AZURE_REGION}.tts.speech.microsoft.com/cognitiveservices/v1`, {
+                method: "POST",
+                headers,
+                body,
+            });
+
+            if (!response.ok) {
+                throw new Error("Text-to-speech request failed");
+            }
+
+            const audioBlob = await response.blob();
+            const audioUrl = URL.createObjectURL(audioBlob);
+            const audio = new Audio(audioUrl);
+            audio.play();
         }
 
         // 英文显示切换
@@ -533,8 +567,12 @@
 
         // 成功音效
         function playSuccessSound() {
-            const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIG2m98OScTgwOUarm7blmGgU7k9n1unEiBC13yO/eizEIHWq+8+OWT');
-            audio.play().catch(() => {});
+            try {
+                const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIG2m98OScTgwOUarm7blmGgU7k9n1unEiBC13yO/eizEIHWq+8+OWT');
+                audio.play().catch(() => {});
+            } catch (error) {
+                console.error('Error playing success sound:', error);
+            }
         }
 
         // 翻译功能
