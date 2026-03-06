@@ -90,7 +90,7 @@
                     <div class="flex gap-3">
                         <button id="sortAsc" class="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300">练习次数升序</button>
                         <button id="sortDesc" class="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300">练习次数降序</button>
-                        <button id="shuffle" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">随机</button>
+                        <button id="shuffle" class="px-4 py-2 bg-gray-200 text-black rounded-lg">随机</button>
                         <button id="favoritesOnly" class="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300">仅收藏</button>
                     </div>
                     <div class="flex items-center gap-4">
@@ -132,7 +132,8 @@
             sortOrder: 'asc',
             showFavoritesOnly: false,
             currentFocusedSentence: null,
-            isShuffled: false
+            isShuffled: false,
+            isPageShuffled: false
         };
 
         // 初始化
@@ -318,7 +319,17 @@
             const filtered = getFilteredSentences();
             const totalPages = Math.ceil(filtered.length / state.pageSize);
             const start = (state.currentPage - 1) * state.pageSize;
-            const paged = filtered.slice(start, start + state.pageSize);
+            let paged = filtered.slice(start, start + state.pageSize);
+            
+            // 如果当前页需要随机显示，则打乱当前页数据
+            if (state.isPageShuffled) {
+                paged = [...paged];
+                for (let i = paged.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [paged[i], paged[j]] = [paged[j], paged[i]];
+                }
+                state.isPageShuffled = false; // 重置标志
+            }
             
             const $list = $('#sentenceList');
             $list.empty();
@@ -390,22 +401,23 @@
             $('#sortAsc').click(() => {
                 state.sortOrder = 'asc';
                 state.isShuffled = false;
+                state.currentPage = 1;
+                $('#shuffle').removeClass('bg-blue-600 text-white').addClass('bg-gray-200 text-black');
                 renderSentences();
             });
 
             $('#sortDesc').click(() => {
                 state.sortOrder = 'desc';
                 state.isShuffled = false;
+                state.currentPage = 1;
+                $('#shuffle').removeClass('bg-blue-600 text-white').addClass('bg-gray-200 text-black');
                 renderSentences();
             });
 
-            $('#shuffle').click(() => {
-                // Fisher-Yates 洗牌算法
-                for (let i = state.sentences.length - 1; i > 0; i--) {
-                    const j = Math.floor(Math.random() * (i + 1));
-                    [state.sentences[i], state.sentences[j]] = [state.sentences[j], state.sentences[i]];
-                }
-                state.isShuffled = true;
+            $('#shuffle').click(function() {
+                // 只随机当前页的数据
+                state.isPageShuffled = true;
+                $(this).removeClass('bg-gray-200 text-black').addClass('bg-blue-600 text-white');
                 renderSentences();
             });
 
@@ -420,6 +432,7 @@
             $('#prevPage').click(() => {
                 if (state.currentPage > 1) {
                     state.currentPage--;
+                    $('#shuffle').removeClass('bg-blue-600 text-white').addClass('bg-gray-200 text-black');
                     renderSentences();
                 }
             });
@@ -429,6 +442,7 @@
                 const totalPages = Math.ceil(filtered.length / state.pageSize);
                 if (state.currentPage < totalPages) {
                     state.currentPage++;
+                    $('#shuffle').removeClass('bg-blue-600 text-white').addClass('bg-gray-200 text-black');
                     renderSentences();
                 }
             });
