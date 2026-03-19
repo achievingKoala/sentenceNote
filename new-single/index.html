@@ -509,6 +509,7 @@
         // 实时输入高亮
         function updateInput($element, input, target) {
             const editor = $element[0];
+            const sentenceId = $element.data('sentence-id');
             
             // 保存光标位置
             const sel = window.getSelection();
@@ -519,22 +520,36 @@
             preCaretRange.setEnd(range.endContainer, range.endOffset);
             const caretOffset = preCaretRange.toString().length;
             
-            // 获取句子中的单词
-            const sentenceWords = target.split(/\s+/).filter(word => word.length > 0);
-            // 高亮匹配的单词
-            const words = input.split(/(\s+)/).map(word => {
-                const cleanWord = word.trim();
-                if (cleanWord && sentenceWords.includes(cleanWord)) {
-                    return `<span class="highlight">${word.replace(/ /g, '&nbsp;')}</span>`;
-                }
-                // 处理空格
-                if (/^\s+$/.test(word)) {
-                    return word.replace(/ /g, '&nbsp;');
-                }
-                return word;
-            });
+            // 从原始数据获取完整句子
+            const sentence = state.sentences.find(s => s.id == sentenceId);
+            if (!sentence) return;
             
-            const html = words.join('');
+            // 处理原始数据中的转义字符
+            let decodedTarget = sentence.text;
+            decodedTarget = decodedTarget.replace(/\\&quot;/g, '"');
+            decodedTarget = decodedTarget.replace(/&quot;/g, '"');
+            
+            // 按字符逐一比较高亮
+            let html = '';
+            for (let i = 0; i < input.length; i++) {
+                const char = input[i];
+                if (i < decodedTarget.length && char === decodedTarget[i]) {
+                    // 字符匹配，高亮显示
+                    if (char === ' ') {
+                        html += '<span class="highlight">&nbsp;</span>';
+                    } else {
+                        html += `<span class="highlight">${char}</span>`;
+                    }
+                } else {
+                    // 字符不匹配，正常显示
+                    if (char === ' ') {
+                        html += '&nbsp;';
+                    } else {
+                        html += char;
+                    }
+                }
+            }
+            
             editor.innerHTML = html;
             
             // 恢复光标位置
@@ -547,42 +562,60 @@
                 return;
             }
             
-            // 去两边空格
-            const userText = input.replace(/\s/g, ' ').trim();
-            const originalText = target.replace(/\s/g, ' ').trim();
+            // 从原始数据获取完整句子
             const sentence = state.sentences.find(s => s.id == sentenceId);
+            if (!sentence) return;
             
-            if (sentence) {
-                const wasComplete = sentence.isComplete;
-                sentence.isComplete = userText === originalText;
+            // 处理原始数据中的转义字符
+            let originalText = sentence.text;
+            // 将 \" 转换为 "
+            originalText = originalText.replace(/\\&quot;/g, '"');
+            // 将 &quot; 转换为 "
+            originalText = originalText.replace(/&quot;/g, '"');
+            // 统一空格并去除两边空格
+            originalText = originalText.replace(/\s+/g, ' ').trim();
+            
+            const userText = input.replace(/\s+/g, ' ').trim();
+            
+            // 调试信息
+            console.log('=== Debug checkComplete ===');
+            console.log('Original sentence.text:', sentence.text);
+            console.log('Processed originalText:', originalText);
+            console.log('User input:', userText);
+            console.log('Lengths - User:', userText.length, 'Target:', originalText.length);
+            console.log('Are equal:', userText === originalText);
+            console.log('==============================');
+            
+            const wasComplete = sentence.isComplete;
+            sentence.isComplete = userText === originalText;
+            
+            // 如果句子刚刚完成（之前未完成，现在完成），则播放成功音效并更新练习次数
+            if (sentence.isComplete && !wasComplete) {
+                console.log('SENTENCE COMPLETED!');
+                $element.siblings('.correct-indicator').removeClass('hidden');
+                playSuccessSound();
                 
-                // 如果句子刚刚完成（之前未完成，现在完成），则播放成功音效并更新练习次数
-                if (sentence.isComplete && !wasComplete) {
-                    $element.siblings('.correct-indicator').removeClass('hidden');
-                    playSuccessSound();
+                // 调用API更新练习次数
+                try {
+                    const response = await fetch(`${API_BASE_URL}/addSentenceCount`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            sentenceId: sentenceId,
+                            userId: 1
+                        })
+                    });
+                    const result = await response.json();
+                    sentence.usage_count = result.new_count;
                     
-                    // 调用API更新练习次数
-                    try {
-                        const response = await fetch(`${API_BASE_URL}/addSentenceCount`, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify({
-                                sentenceId: sentenceId,
-                                userId: 1
-                            })
-                        });
-                        const result = await response.json();
-                        sentence.usage_count = result.new_count;
-                        
-                        // 更新显示
-                        setTimeout(() => {
-                            $element.closest('.sentence-item').find('.text-gray-500').text(`练习次数: ${sentence.usage_count}`);
-                        }, 500);
-                    } catch (error) {
-                        console.error('更新练习次数失败:', error);
-                    }
+                    // 更新显示
+                    setTimeout(() => {
+                        $element.closest('.sentence-item').find('.text-gray-500').text(`练习次数: ${sentence.usage_count}`);
+                    }, 500);
+                } catch (error) {
+                    console.error('更新练习次数失败:', error);
                 }
             }
         }
