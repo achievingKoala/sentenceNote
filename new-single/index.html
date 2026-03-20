@@ -529,23 +529,28 @@
             decodedTarget = decodedTarget.replace(/\\&quot;/g, '"');
             decodedTarget = decodedTarget.replace(/&quot;/g, '"');
             
-            // 按字符逐一比较高亮
+            // 按单词匹配高亮
+            const inputWords = input.trim().split(/\s+/).filter(word => word.length > 0);
+            const targetWords = decodedTarget.toLowerCase().split(/\s+/).filter(word => word.length > 0);
+            
             let html = '';
-            for (let i = 0; i < input.length; i++) {
-                const char = input[i];
-                if (i < decodedTarget.length && char === decodedTarget[i]) {
-                    // 字符匹配，高亮显示
-                    if (char === ' ') {
-                        html += '<span class="highlight">&nbsp;</span>';
+            const words = input.split(/(\s+)/);
+            
+            for (let i = 0; i < words.length; i++) {
+                const word = words[i];
+                if (/\s/.test(word)) {
+                    // 空格保持原样
+                    html += word.replace(/ /g, '&nbsp;');
+                } else if (word.length > 0) {
+                    // 检查单词是否在目标句子中（完全匹配）
+                    const isWordInTarget = targetWords.some(targetWord => 
+                        targetWord.toLowerCase() === word.toLowerCase()
+                    );
+                    
+                    if (isWordInTarget) {
+                        html += `<span class="highlight">${word}</span>`;
                     } else {
-                        html += `<span class="highlight">${char}</span>`;
-                    }
-                } else {
-                    // 字符不匹配，正常显示
-                    if (char === ' ') {
-                        html += '&nbsp;';
-                    } else {
-                        html += char;
+                        html += word;
                     }
                 }
             }
