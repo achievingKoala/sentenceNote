@@ -6,7 +6,6 @@
     <title>英语句子学习应用</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         .highlight { color: green; }
         .correct-indicator { animation: flash 0.5s; }
@@ -16,29 +15,14 @@
     </style>
 </head>
 <body class="bg-gray-50 h-screen flex">
-    <!-- 登录模态框 -->
-    <div id="loginModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div class="bg-white rounded-xl shadow-2xl p-8 w-96">
-            <h2 class="text-2xl font-bold text-center mb-6">登录</h2>
-            <div id="emailStep">
-                <input type="email" id="emailInput" class="w-full p-3 border rounded-lg mb-4" placeholder="输入邮箱">
-                <button onclick="sendOTP()" class="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700">发送验证码</button>
-            </div>
-            <div id="otpStep" class="hidden">
-                <input type="text" id="otpInput" class="w-full p-3 border rounded-lg mb-4" placeholder="输入验证码">
-                <button onclick="verifyOTP()" class="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700">验证登录</button>
-            </div>
-            <div id="loginMessage" class="mt-4 text-center"></div>
-        </div>
-    </div>
+
     <!-- 侧边栏 -->
     <div class="w-64 bg-white shadow-lg">
         <div class="p-6 border-b">
             <h1 class="text-2xl font-bold text-gray-800">句子笔记</h1>
         </div>
         <div class="p-4">
-            <button id="loginBtn" class="w-full bg-red-600 text-white py-3 px-4 rounded-lg mb-4 hover:bg-red-700 font-medium">登录</button>
-            <button id="logoutBtn" class="w-full bg-gray-600 text-white py-3 px-4 rounded-lg mb-4 hover:bg-gray-700 font-medium hidden">退出登录</button>
+
             <button id="addBtn" class="w-full bg-blue-600 text-white py-3 px-4 rounded-lg mb-4 hover:bg-blue-700 font-medium">添加句子</button>
             <div id="notebooks" class="overflow-y-auto" style="max-height: calc(100vh - 200px);"></div>
         </div>
@@ -112,12 +96,7 @@
     </div>
 
     <script>
-        // Supabase 配置
-        const sb = window.supabase.createClient(
-            'https://elckemvmphbjjlpzgoqy.supabase.co',
-            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVsY2tlbXZtcGhiampscHpnb3F5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg5Mzk4NDYsImV4cCI6MjA3NDUxNTg0Nn0.RElcl4dh0bhzYtV0SFTmkwKSy06qxZErZqcM8t137QM'
-        );
-        let userEmail = '';
+
         
         // 全局配置
         const API_BASE_URL = 'https://notebook-back-ldu7.onrender.com';
@@ -138,96 +117,15 @@
 
         // 初始化
         $(document).ready(function() {
-            checkAuth();
+            initApp();
         });
         
-        // 检查登录状态
-        async function checkAuth() {
-            const { data: { session } } = await sb.auth.getSession();
-            if (session) {
-                $('#loginModal').hide();
-                initApp();
-            }
-        }
-        
-        // 发送验证码
-        async function sendOTP() {
-            const email = $('#emailInput').val().trim();
-            if (!email) return showLoginMessage('请输入邮箱', 'error');
-            
-            userEmail = email;
-            const { error } = await sb.auth.signInWithOtp({ 
-                email,
-                options: {
-                    shouldCreateUser: true,
-                    emailRedirectTo: undefined // 确保不发送链接
-                }
-            });
-            
-            if (error) {
-                showLoginMessage('发送失败: ' + error.message, 'error');
-            } else {
-                showLoginMessage('验证码已发送到邮箱', 'success');
-                $('#emailStep').hide();
-                $('#otpStep').show();
-            }
-        }
-        
-        // 验证登录
-        async function verifyOTP() {
-            const otp = $('#otpInput').val().trim();
-            if (!otp) return showLoginMessage('请输入验证码', 'error');
-            
-            const { error } = await sb.auth.verifyOtp({
-                email: userEmail,
-                token: otp,
-                type: 'email'
-            });
-            
-            if (error) {
-                showLoginMessage('验证失败: ' + error.message, 'error');
-            } else {
-                showLoginMessage('登录成功!', 'success');
-                setTimeout(() => {
-                    $('#loginModal').hide();
-                    initApp();
-                }, 1000);
-            }
-        }
-        
-        // 显示登录消息
-        function showLoginMessage(text, type) {
-            $('#loginMessage').text(text).removeClass('text-red-500 text-green-500').addClass(type === 'error' ? 'text-red-500' : 'text-green-500');
-        }
+
         
         // 初始化应用
         function initApp() {
-            $('#loginBtn').hide();
-            $('#logoutBtn').show();
             loadNotebooks();
             bindEvents();
-        }
-        
-        // 显示登录模态框
-        function showLogin() {
-            $('#loginModal').show();
-            $('#emailStep').show();
-            $('#otpStep').hide();
-            $('#emailInput, #otpInput').val('');
-            $('#loginMessage').text('');
-        }
-        
-        // 退出登录
-        async function logout() {
-            await sb.auth.signOut();
-            $('#loginBtn').show();
-            $('#logoutBtn').hide();
-            $('#notebooks').empty();
-            $('#sentenceList').empty();
-            $('#addPage').hide();
-            $('#practicePage').hide();
-            state.sentences = [];
-            state.notebooks = [];
         }
 
         // 加载笔记本列表
@@ -275,9 +173,6 @@
         // 加载句子列表
         async function loadSentences(notebookId) {
             try {
-                const { data: { session } } = await sb.auth.getSession();
-                if (!session) return;
-                
                 const response = await fetch(`${API_BASE_URL}/sentenceStatsByNotebookId?notebookId=${notebookId}`);
                 const sentences = await response.json();
                 state.sentences = sentences.map(s => ({
@@ -499,11 +394,7 @@
             // 翻译
             $('#englishInput').on('input', debounce(translateText, 1000));
 
-            // 登录按钮
-            $('#loginBtn').click(showLogin);
-            
-            // 退出登录按钮
-            $('#logoutBtn').click(logout);
+
         }
 
         // 实时输入高亮
