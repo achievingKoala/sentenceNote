@@ -112,7 +112,7 @@
             showFavoritesOnly: false,
             currentFocusedSentence: null,
             isShuffled: false,
-            isPageShuffled: false
+            sentenceOrder: []
         };
 
         // 初始化
@@ -175,8 +175,9 @@
             try {
                 const response = await fetch(`${API_BASE_URL}/sentenceStatsByNotebookId?notebookId=${notebookId}`);
                 const sentences = await response.json();
-                state.sentences = sentences.map(s => ({
+                state.sentences = sentences.map((s, index) => ({
                     ...s,
+                    originalIndex: index,
                     userInput: '',
                     showEnglish: false,
                     isComplete: false
@@ -184,26 +185,49 @@
                 state.currentNotebook = notebookId;
                 state.currentPage = 1;
                 state.isShuffled = false;
+                updateSentenceOrder();
+                $('#shuffle').removeClass('bg-blue-600 text-white').addClass('bg-gray-200 text-black');
                 renderSentences();
             } catch (error) {
                 console.error('加载句子失败:', error);
             }
         }
 
+        // 根据当前排序方式生成稳定的句子顺序
+        function updateSentenceOrder() {
+            const ordered = [...state.sentences];
+            
+            if (!state.isShuffled) {
+                ordered.sort((a, b) => {
+                    const order = state.sortOrder === 'asc' ? 1 : -1;
+                    const countDiff = (Number(a.usage_count) - Number(b.usage_count)) * order;
+                    if (countDiff !== 0) return countDiff;
+                    return a.originalIndex - b.originalIndex;
+                });
+            }
+            
+            state.sentenceOrder = ordered.map(sentence => sentence.id);
+        }
+
+        // Fisher-Yates 洗牌算法
+        function shuffleArray(items) {
+            const shuffled = [...items];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            return shuffled;
+        }
+
         // 获取过滤后的句子
         function getFilteredSentences() {
-            let filtered = [...state.sentences];
+            const sentenceMap = new Map(state.sentences.map(sentence => [sentence.id, sentence]));
+            let filtered = state.sentenceOrder
+                .map(id => sentenceMap.get(id))
+                .filter(Boolean);
             
             if (state.showFavoritesOnly) {
                 filtered = filtered.filter(s => s.is_liked);
-            }
-            
-            // 排序
-            if (!state.isShuffled) {
-                filtered.sort((a, b) => {
-                    const order = state.sortOrder === 'asc' ? 1 : -1;
-                    return (a.usage_count - b.usage_count) * order;
-                });
             }
             
             return filtered;
@@ -213,25 +237,14 @@
         function renderSentences() {
             const filtered = getFilteredSentences();
             const totalPages = Math.ceil(filtered.length / state.pageSize);
-            const start = (state.currentPage - 1) * state.pageSize;
-            let paged = filtered.slice(start, start + state.pageSize);
-            
-            // 如果当前页需要随机显示，则打乱当前页数据
-            if (state.isPageShuffled) {
-                paged = [...paged];
-                for (let i = paged.length - 1; i > 0; i--) {
-                    const j = Math.floor(Math.random() * (i + 1));
-                    [paged[i], paged[j]] = [paged[j], paged[i]];
-                }
-                state.isPageShuffled = false; // 重置标志
+            if (state.currentPage > totalPages && totalPages > 0) {
+                state.currentPage = totalPages;
             }
+            const start = (state.currentPage - 1) * state.pageSize;
+            const paged = filtered.slice(start, start + state.pageSize);
             
             const $list = $('#sentenceList');
             $list.empty();
-            
-            if (paged.length === 0) {
-                return; // 空列表什么都不展示
-            }
             
             paged.forEach(sentence => {
                 const $item = $(`
@@ -297,6 +310,7 @@
                 state.sortOrder = 'asc';
                 state.isShuffled = false;
                 state.currentPage = 1;
+                updateSentenceOrder();
                 $('#shuffle').removeClass('bg-blue-600 text-white').addClass('bg-gray-200 text-black');
                 renderSentences();
             });
@@ -305,13 +319,15 @@
                 state.sortOrder = 'desc';
                 state.isShuffled = false;
                 state.currentPage = 1;
+                updateSentenceOrder();
                 $('#shuffle').removeClass('bg-blue-600 text-white').addClass('bg-gray-200 text-black');
                 renderSentences();
             });
 
             $('#shuffle').click(function() {
-                // 只随机当前页的数据
-                state.isPageShuffled = true;
+                state.sentenceOrder = shuffleArray(state.sentenceOrder);
+                state.isShuffled = true;
+                state.currentPage = 1;
                 $(this).removeClass('bg-gray-200 text-black').addClass('bg-blue-600 text-white');
                 renderSentences();
             });
@@ -327,7 +343,6 @@
             $('#prevPage').click(() => {
                 if (state.currentPage > 1) {
                     state.currentPage--;
-                    $('#shuffle').removeClass('bg-blue-600 text-white').addClass('bg-gray-200 text-black');
                     renderSentences();
                 }
             });
@@ -337,7 +352,6 @@
                 const totalPages = Math.ceil(filtered.length / state.pageSize);
                 if (state.currentPage < totalPages) {
                     state.currentPage++;
-                    $('#shuffle').removeClass('bg-blue-600 text-white').addClass('bg-gray-200 text-black');
                     renderSentences();
                 }
             });
