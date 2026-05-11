@@ -6,13 +6,21 @@
 
 当前主实现文件是：
 
-- `new-single/index.html`
+- `index.html`
+
+`index.html` 已经是 HTML 单页应用入口，适合直接作为静态站点根入口部署。
 
 仓库里还保留了一个较旧的 HTML 快照：
 
 - `sentence-app.html`
 
-`src/` 目录下的 Vue/Vite 代码，以及根目录的 `index.html`、`vite.config.js`、相关 npm scripts，目前都应视为旧版本或参考代码。除非用户明确要求修改 Vue 版本，否则优先处理 HTML 单页版本。
+`new-single/index.html` 是迁移到根目录前的 HTML 版本副本，可作为参考。
+
+原来的 Vite 入口没有删除，已经重命名保存为：
+
+- `index-vite.html`
+
+`src/` 目录下的 Vue/Vite 代码，以及 `vite.config.js`、相关 npm scripts，目前都应视为旧版本或参考代码。除非用户明确要求修改 Vue 版本，否则优先处理 HTML 单页版本。
 
 ## 当前前端技术栈
 
@@ -68,9 +76,10 @@
 
 ## 重要注意事项
 
-- `new-single/index.html` 看起来是当前最新的应用文件。
-- 如果部署 HTML 版本，需要确保部署入口指向 `new-single/index.html`，或者把该文件迁移/复制为根目录的 `index.html`。
-- 根目录的 `index.html` 仍然是旧 Vite 入口，会挂载 Vue 应用。
+- `index.html` 是当前最新的 HTML 单页应用入口。
+- `new-single/index.html` 保留为迁移前副本，修改主应用时优先改根目录 `index.html`。
+- `index-vite.html` 保留了旧的 Vite/Vue 根入口。
+- 如果部署 HTML 版本，直接部署根目录 `index.html` 即可。
 - Azure TTS 和其他外部 API key 目前直接写在前端代码里，不适合公开生产部署。
 - HTML 应用依赖网络访问 CDN、翻译接口、后端接口和 Azure TTS。
 - `src/sql/` 存放数据库建表和种子数据。
@@ -78,7 +87,7 @@
 
 ## 已知后续事项
 
-需要确认 `new-single/index.html` 里的保存按钮是否已经绑定到 `saveSentence()`。函数已经存在，但 `bindEvents()` 中应包含：
+需要确认 `index.html` 里的保存按钮是否已经绑定到 `saveSentence()`。函数已经存在，但 `bindEvents()` 中应包含：
 
 ```js
 $('#saveBtn').click(saveSentence);
